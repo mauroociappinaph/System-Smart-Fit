@@ -1,13 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserController } from './user.controller';
 import { CreateUserService } from '../../application/use-cases/create-user.service';
-import { UserGoal } from '../../domain/entities/user.entity';
+import { UserGoal, UserRole } from '../../domain/entities/user.entity';
 
 describe('UserController', () => {
   let controller: UserController;
   let mockService: jest.Mocked<Pick<CreateUserService, 'execute'>>;
 
   const mockDto = {
+    userId: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
     name: 'Jane Doe',
     weightKg: 60,
     heightCm: 165,
@@ -35,11 +36,13 @@ describe('UserController', () => {
     const result = await controller.register(mockDto as any, mockRes);
 
     expect(mockService.execute).toHaveBeenCalledWith({
+      userId: mockDto.userId,
       name: mockDto.name,
       weightKg: mockDto.weightKg,
       heightCm: mockDto.heightCm,
       birthDate: mockDto.birthDate,
       goal: mockDto.goal,
+      role: UserRole.USER,
     });
     expect(result).toEqual({ userId: 'generated-uuid' });
   });

@@ -9,6 +9,7 @@ import {
 import { Response } from 'express';
 import { CreateUserRequestDto } from '../dtos/create-user.request.dto';
 import { CreateUserService } from '../../application/use-cases/create-user.service';
+import { UserRole } from '../../domain/entities/user.entity';
 
 @Controller('users')
 export class UserController {
@@ -27,7 +28,7 @@ export class UserController {
       heightCm: dto.heightCm,
       birthDate: dto.birthDate,
       goal: dto.goal,
-      role: dto.role,
+      role: UserRole.USER,
     });
 
     res.setHeader('Location', `/users/${result.userId}`);

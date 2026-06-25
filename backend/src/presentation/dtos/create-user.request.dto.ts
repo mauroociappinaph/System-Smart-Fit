@@ -1,5 +1,5 @@
 import { IsString, IsNumber, IsNotEmpty, IsEnum, Min, Max } from 'class-validator';
-import { UserGoal, UserRole } from '../../domain/entities/user.entity';
+import { UserGoal } from '../../domain/entities/user.entity';
 
 export class CreateUserRequestDto {
   @IsString()
@@ -25,7 +25,4 @@ export class CreateUserRequestDto {
 
   @IsEnum(UserGoal)
   goal: UserGoal;
-
-  @IsEnum(UserRole)
-  role: UserRole;
 }
