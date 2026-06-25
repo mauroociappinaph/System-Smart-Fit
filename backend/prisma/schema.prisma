@@ -60,6 +60,7 @@ model User {
   heightCm     Float
   birthDate    BigInt
   goal         String
+  role         String @default("USER")
   registeredAt BigInt
 
   @@map("users")

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserPrismaRepository } from './user-prisma.repository';
 import { PrismaService } from '../prisma/prisma.service';
-import { User, UserGoal } from '../../domain/entities/user.entity';
+import { User, UserGoal, UserRole } from '../../domain/entities/user.entity';
 
 describe('UserPrismaRepository', () => {
   let repository: UserPrismaRepository;
@@ -14,6 +14,7 @@ describe('UserPrismaRepository', () => {
     heightCm: 178,
     birthDate: BigInt(946684800000),
     goal: UserGoal.GAIN_MUSCLE,
+    role: UserRole.USER,
     registeredAt: BigInt(1700000000000),
   };
 
@@ -45,6 +46,7 @@ describe('UserPrismaRepository', () => {
         mockRecord.heightCm,
         Number(mockRecord.birthDate),
         mockRecord.goal,
+        mockRecord.role,
         Number(mockRecord.registeredAt),
       );
 
@@ -59,6 +61,7 @@ describe('UserPrismaRepository', () => {
           heightCm: mockRecord.heightCm,
           birthDate: Number(mockRecord.birthDate),
           goal: mockRecord.goal,
+          role: mockRecord.role,
           registeredAt: Number(mockRecord.registeredAt),
         },
       });
@@ -80,6 +83,7 @@ describe('UserPrismaRepository', () => {
       expect(result!.id).toBe(mockRecord.id);
       expect(result!.name).toBe(mockRecord.name);
       expect(result!.goal).toBe(mockRecord.goal);
+      expect(result!.role).toBe(mockRecord.role);
     });
   });
 });

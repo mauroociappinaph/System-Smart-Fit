@@ -7,6 +7,11 @@ export enum UserGoal {
   MAINTAIN_FITNESS = 'MAINTAIN_FITNESS',
 }
 
+export enum UserRole {
+  USER = 'USER',
+  ADMIN = 'ADMIN',
+}
+
 export class User {
   private constructor(
     private readonly _id: string,
@@ -15,6 +20,7 @@ export class User {
     private readonly _heightCm: number,
     private readonly _birthDate: number,
     private readonly _goal: UserGoal,
+    private readonly _role: UserRole,
     private readonly _registeredAt: number,
   ) {}
 
@@ -24,6 +30,7 @@ export class User {
   public get heightCm(): number { return this._heightCm; }
   public get birthDate(): number { return this._birthDate; }
   public get goal(): UserGoal { return this._goal; }
+  public get role(): UserRole { return this._role; }
   public get registeredAt(): number { return this._registeredAt; }
 
   /**
@@ -38,6 +45,7 @@ export class User {
     heightCm: number,
     birthDate: number,
     goal: UserGoal,
+    role: UserRole,
     registeredAt: number,
   ): { entity: User; event: UserRegistered } {
     if (!name?.trim()) {
@@ -55,8 +63,11 @@ export class User {
     if (!Object.values(UserGoal).includes(goal)) {
       throw new Error(`User: invalid goal "${goal}"`);
     }
+    if (!Object.values(UserRole).includes(role)) {
+      throw new Error(`User: invalid role "${role}"`);
+    }
 
-    const entity = new User(id, name, weightKg, heightCm, birthDate, goal, registeredAt);
+    const entity = new User(id, name, weightKg, heightCm, birthDate, goal, role, registeredAt);
 
     const event = new UserRegistered(eventId, id, registeredAt, {
       name,
@@ -64,6 +75,7 @@ export class User {
       heightCm,
       birthDate,
       goal,
+      role,
     });
 
     return { entity, event };

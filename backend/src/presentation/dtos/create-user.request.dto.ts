@@ -1,7 +1,11 @@
 import { IsString, IsNumber, IsNotEmpty, IsEnum, Min, Max } from 'class-validator';
-import { UserGoal } from '../../domain/entities/user.entity';
+import { UserGoal, UserRole } from '../../domain/entities/user.entity';
 
 export class CreateUserRequestDto {
+  @IsString()
+  @IsNotEmpty()
+  userId: string;
+
   @IsString()
   @IsNotEmpty()
   name: string;
@@ -21,4 +25,7 @@ export class CreateUserRequestDto {
 
   @IsEnum(UserGoal)
   goal: UserGoal;
+
+  @IsEnum(UserRole)
+  role: UserRole;
 }

@@ -1,5 +1,5 @@
 import { DomainEvent } from '../../shared/domain/domain-event.interface';
-import { UserGoal } from '../entities/user.entity';
+import { UserGoal, UserRole } from '../entities/user.entity';
 
 export interface UserRegisteredPayload {
   readonly name: string;
@@ -7,6 +7,7 @@ export interface UserRegisteredPayload {
   readonly heightCm: number;
   readonly birthDate: number;
   readonly goal: UserGoal;
+  readonly role: UserRole;
 }
 
 export class UserRegistered implements DomainEvent<UserRegisteredPayload> {

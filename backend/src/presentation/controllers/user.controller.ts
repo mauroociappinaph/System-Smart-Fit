@@ -21,11 +21,13 @@ export class UserController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ userId: string }> {
     const result = await this.createUserService.execute({
+      userId: dto.userId,
       name: dto.name,
       weightKg: dto.weightKg,
       heightCm: dto.heightCm,
       birthDate: dto.birthDate,
       goal: dto.goal,
+      role: dto.role,
     });
 
     res.setHeader('Location', `/users/${result.userId}`);
