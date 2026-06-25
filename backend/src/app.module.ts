@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './infrastructure/prisma/prisma.module';
@@ -6,10 +7,12 @@ import { HealthTelemetryModule } from './modules/health-telemetry/health-telemet
 import { UserModule } from './modules/user/user.module';
 import { UserStateModule } from './modules/user-state/user-state.module';
 import { AgentInsightModule } from './modules/agent-insight/agent-insight.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { RolesGuard } from './modules/auth/guards/roles.guard';
 
 @Module({
-  imports: [PrismaModule, HealthTelemetryModule, UserModule, UserStateModule, AgentInsightModule],
+  imports: [PrismaModule, HealthTelemetryModule, UserModule, UserStateModule, AgentInsightModule, AuthModule],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, { provide: APP_GUARD, useClass: RolesGuard }],
 })
 export class AppModule {}

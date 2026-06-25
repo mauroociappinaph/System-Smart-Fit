@@ -12,6 +12,6 @@ import { UserPrismaRepository } from '../../infrastructure/persistence/user-pris
       useClass: UserPrismaRepository,
     },
   ],
-  exports: [CreateUserService],
+  exports: [CreateUserService, 'UserRepository'],
 })
 export class UserModule {}
