@@ -21,6 +21,21 @@ model HealthTelemetry {
   @@map("health_telemetry")
 }
 
+model UserState {
+  id             String   @id
+  userId         String
+  currentState   String
+  previousState  String?
+  transitionedAt BigInt
+  correlationId  String
+  deletedAt      BigInt?
+
+  @@index([userId])
+  @@index([currentState])
+  @@index([userId, currentState])
+  @@map("user_states")
+}
+
 model User {
   id           String @id
   name         String
