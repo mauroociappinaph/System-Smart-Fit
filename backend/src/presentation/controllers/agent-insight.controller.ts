@@ -8,6 +8,7 @@ import {
   Body,
   HttpCode,
   HttpStatus,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { CreateInsightRequestDto } from '../dtos/create-insight.request.dto';
 import { ValidateInsightRequestDto } from '../dtos/validate-insight.request.dto';
@@ -80,7 +81,7 @@ export class AgentInsightController {
   @Patch(':id/validate')
   @HttpCode(HttpStatus.OK)
   async validate(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: ValidateInsightRequestDto,
   ): Promise<{ insightId: string; status: string }> {
     const insight = await this.validateInsightService.execute(id, dto.action);

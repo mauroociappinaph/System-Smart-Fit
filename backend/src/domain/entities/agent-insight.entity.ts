@@ -8,7 +8,7 @@ export enum ValidationStatus {
   DISCARDED = 'discarded',
 }
 
-const NOT_PENDING_ERROR = 'AgentInsight: insight is not in PENDING status';
+export const NOT_PENDING_ERROR = 'AgentInsight: insight is not in PENDING status';
 
 export class AgentInsight {
   private constructor(

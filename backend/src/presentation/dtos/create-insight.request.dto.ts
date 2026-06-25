@@ -1,4 +1,5 @@
-import { IsString, IsNumber, IsNotEmpty, IsOptional, Min } from 'class-validator';
+import { IsString, IsNumber, IsNotEmpty, IsOptional, Min, Max, IsUUID } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateInsightRequestDto {
   @IsString()
@@ -17,15 +18,17 @@ export class CreateInsightRequestDto {
   @IsNotEmpty()
   content: string;
 
+  @Type(() => Number)
   @IsNumber()
   @Min(0)
+  @Max(1)
   score: number;
 
-  @IsString()
+  @IsUUID('4')
   @IsOptional()
   insightId?: string;
 
-  @IsString()
+  @IsUUID('4')
   @IsOptional()
   eventId?: string;
 }
