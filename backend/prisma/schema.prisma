@@ -1,0 +1,22 @@
+// Learn more about Prisma schema: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model HealthTelemetry {
+  id               String @id
+  userId           String
+  metricType       String
+  value            Float
+  unit             String
+  deviceTimestamp  BigInt
+  serverReceivedAt BigInt
+  correlationId    String
+
+  @@map("health_telemetry")
+}

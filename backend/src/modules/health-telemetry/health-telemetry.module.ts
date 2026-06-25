@@ -1,15 +1,16 @@
 import { Module } from '@nestjs/common';
 import { HealthTelemetryController } from '../../presentation/controllers/health-telemetry.controller';
 import { RecordHealthTelemetryService } from '../../application/use-cases/record-health-telemetry.service';
-
-// Mock Provider until we build the real Postgres adapter in Infrastructure
-const mockRepositoryProvider = {
-  provide: 'HealthTelemetryRepository',
-  useValue: { save: async () => {} },
-};
+import { HealthTelemetryPrismaRepository } from '../../infrastructure/persistence/health-telemetry-prisma.repository';
 
 @Module({
   controllers: [HealthTelemetryController],
-  providers: [RecordHealthTelemetryService, mockRepositoryProvider],
+  providers: [
+    RecordHealthTelemetryService,
+    {
+      provide: 'HealthTelemetryRepository',
+      useClass: HealthTelemetryPrismaRepository,
+    },
+  ],
 })
 export class HealthTelemetryModule {}

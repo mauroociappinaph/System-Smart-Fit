@@ -17,6 +17,8 @@ export class HealthTelemetry {
   public get metricType(): string { return this._metricType; }
   public get value(): number { return this._value; }
   public get unit(): string { return this._unit; }
+  public get deviceTimestamp(): number { return this._deviceTimestamp; }
+  public get serverReceivedAt(): number { return this._serverReceivedAt; }
   public get correlationId(): string { return this._correlationId; }
 
   /**
