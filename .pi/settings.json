@@ -1,0 +1,30 @@
+{
+	"subagents": {
+		"agentOverrides": {
+			"context-builder": {
+				"model": "nvidia/nvidia/nemotron-3-ultra-550b-a55b"
+			},
+			"delegate": {
+				"model": "nvidia/nvidia/nemotron-3-ultra-550b-a55b"
+			},
+			"oracle": {
+				"model": "nvidia/nvidia/nemotron-3-ultra-550b-a55b"
+			},
+			"planner": {
+				"model": "nvidia/nvidia/nemotron-3-ultra-550b-a55b"
+			},
+			"researcher": {
+				"model": "nvidia/nvidia/nemotron-3-ultra-550b-a55b"
+			},
+			"reviewer": {
+				"model": "nvidia/nvidia/nemotron-3-ultra-550b-a55b"
+			},
+			"scout": {
+				"model": "nvidia/nvidia/nemotron-3-ultra-550b-a55b"
+			},
+			"worker": {
+				"model": "nvidia/nvidia/nemotron-3-ultra-550b-a55b"
+			}
+		}
+	}
+}
