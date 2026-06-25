@@ -3,12 +3,12 @@ import { RecordHealthTelemetryUseCase } from '../ports/in/record-health-telemetr
 import { RecordHealthTelemetryCommand } from '../ports/in/record-health-telemetry.command';
 import { HealthTelemetryRepository } from '../ports/out/health-telemetry.repository';
 import { HealthTelemetry } from '../../domain/entities/health-telemetry.entity';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 
 @Injectable()
 export class RecordHealthTelemetryService implements RecordHealthTelemetryUseCase {
   constructor(
-    private readonly telemetryRepository: HealthTelemetryRepository,
+    @Inject('HealthTelemetryRepository') private readonly telemetryRepository: HealthTelemetryRepository,
   ) {}
 
   async execute(command: RecordHealthTelemetryCommand): Promise<void> {
