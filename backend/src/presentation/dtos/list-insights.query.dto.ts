@@ -1,7 +1,8 @@
-import { IsString, IsOptional, IsInt, Min } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsInt, Min, Max } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class ListInsightsQueryDto {
+  @IsNotEmpty()
   @IsString()
   userId: string;
 
@@ -9,6 +10,7 @@ export class ListInsightsQueryDto {
   @Type(() => Number)
   @IsInt()
   @Min(1)
+  @Max(200)
   limit?: number;
 
   @IsOptional()

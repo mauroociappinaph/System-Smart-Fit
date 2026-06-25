@@ -1,7 +1,7 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, ConflictException } from '@nestjs/common';
 import { ValidateInsightUseCase, ValidationAction } from '../ports/in/validate-insight.use-case';
 import { AgentInsightRepository } from '../ports/out/agent-insight.repository';
-import { AgentInsight } from '../../domain/entities/agent-insight.entity';
+import { AgentInsight, NOT_PENDING_ERROR } from '../../domain/entities/agent-insight.entity';
 
 @Injectable()
 export class ValidateInsightService implements ValidateInsightUseCase {
@@ -17,16 +17,26 @@ export class ValidateInsightService implements ValidateInsightUseCase {
       throw new NotFoundException(`AgentInsight with id "${insightId}" not found`);
     }
 
-    switch (action) {
-      case 'approve':
-        insight.approve();
-        break;
-      case 'reject':
-        insight.reject();
-        break;
-      case 'discard':
-        insight.discard();
-        break;
+    try {
+      switch (action) {
+        case 'approve':
+          insight.approve();
+          break;
+        case 'reject':
+          insight.reject();
+          break;
+        case 'discard':
+          insight.discard();
+          break;
+      }
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message === NOT_PENDING_ERROR
+      ) {
+        throw new ConflictException(error.message);
+      }
+      throw error;
     }
 
     await this.agentInsightRepository.save(insight);
