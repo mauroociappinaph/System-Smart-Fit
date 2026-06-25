@@ -36,6 +36,23 @@ model UserState {
   @@map("user_states")
 }
 
+model AgentInsight {
+  id               String   @id
+  userId           String
+  correlationId    String
+  category         String
+  content          String
+  score            Float
+  validationStatus String
+  createdAt        BigInt
+  updatedAt        BigInt
+
+  @@index([userId])
+  @@index([validationStatus])
+  @@index([userId, validationStatus])
+  @@map("agent_insights")
+}
+
 model User {
   id           String @id
   name         String
