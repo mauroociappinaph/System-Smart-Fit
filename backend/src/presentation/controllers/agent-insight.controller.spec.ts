@@ -14,6 +14,8 @@ describe('AgentInsightController', () => {
   let mockValidateService: jest.Mocked<ValidateInsightService>;
   let mockListService: jest.Mocked<GetUserInsightsService>;
 
+  const mockUser = { sub: 'user-1', email: 'test@example.com', role: 'USER' };
+
   beforeEach(async () => {
     mockCreateService = {
       execute: jest.fn().mockResolvedValue({ entityId: 'insight-1', event: {} }),
@@ -97,7 +99,7 @@ describe('AgentInsightController', () => {
   });
 
   describe('GET /insights', () => {
-    it('should return paginated insights for a user', async () => {
+    it('should return paginated insights for authenticated user', async () => {
       const insight = AgentInsight.reconstitute(
         'insight-1', 'user-1', 'corr-1', 'nutrition',
         'High protein intake', 0.85, 'pending' as any, 1000, 1000,
@@ -105,9 +107,9 @@ describe('AgentInsightController', () => {
 
       mockListService.execute.mockResolvedValue({ data: [insight], total: 1 });
 
-      const query: ListInsightsQueryDto = { userId: 'user-1' };
+      const query: ListInsightsQueryDto = {};
 
-      const result = await controller.list(query);
+      const result = await controller.list(query, mockUser);
 
       expect(mockListService.execute).toHaveBeenCalledWith('user-1', {
         limit: undefined,
@@ -138,14 +140,13 @@ describe('AgentInsightController', () => {
       mockListService.execute.mockResolvedValue({ data: [], total: 0 });
 
       const query: ListInsightsQueryDto = {
-        userId: 'user-2',
         limit: 10,
         offset: 20,
       };
 
-      await controller.list(query);
+      await controller.list(query, mockUser);
 
-      expect(mockListService.execute).toHaveBeenCalledWith('user-2', {
+      expect(mockListService.execute).toHaveBeenCalledWith('user-1', {
         limit: 10,
         offset: 20,
         month: undefined,
@@ -160,11 +161,10 @@ describe('AgentInsightController', () => {
       mockListService.execute.mockResolvedValue({ data: [], total: 0 });
 
       const query: ListInsightsQueryDto = {
-        userId: 'user-1',
         month: 3,
       };
 
-      await controller.list(query);
+      await controller.list(query, mockUser);
 
       expect(mockListService.execute).toHaveBeenCalledWith('user-1', {
         limit: undefined,
@@ -179,12 +179,11 @@ describe('AgentInsightController', () => {
       mockListService.execute.mockResolvedValue({ data: [], total: 0 });
 
       const query: ListInsightsQueryDto = {
-        userId: 'user-1',
         startDate: 1700000000000,
         endDate: 1700100000000,
       };
 
-      await controller.list(query);
+      await controller.list(query, mockUser);
 
       expect(mockListService.execute).toHaveBeenCalledWith('user-1', {
         limit: undefined,

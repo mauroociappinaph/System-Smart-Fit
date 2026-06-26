@@ -10,6 +10,7 @@ import {
   HttpStatus,
   ParseUUIDPipe,
 } from '@nestjs/common';
+import { CurrentUser } from '../../modules/auth/decorators/current-user.decorator';
 import { CreateInsightRequestDto } from '../dtos/create-insight.request.dto';
 import { ValidateInsightRequestDto } from '../dtos/validate-insight.request.dto';
 import { ListInsightsQueryDto } from '../dtos/list-insights.query.dto';
@@ -45,6 +46,7 @@ export class AgentInsightController {
   @HttpCode(HttpStatus.OK)
   async list(
     @Query() query: ListInsightsQueryDto,
+    @CurrentUser() user: { sub: string },
   ): Promise<{
     data: Array<{
       id: string;
@@ -59,7 +61,7 @@ export class AgentInsightController {
     total: number;
   }> {
     const { data, total } = await this.getUserInsightsService.execute(
-      query.userId,
+      user.sub,
       {
         limit: query.limit,
         offset: query.offset,

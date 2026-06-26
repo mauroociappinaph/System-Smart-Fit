@@ -92,9 +92,10 @@ export const useInsightsStore = create<InsightsState>((set, get) => ({
 
   /** Changes month filter and re-fetches from page 1. Clears date range. */
   setMonth: async (userId: string, month?: number) => {
+    const limit = get().limit;
     set({ month, startDate: undefined, endDate: undefined, isLoading: true, error: null, offset: 0 });
     try {
-      const res = await insightsApi.list(userId, 0, get().limit, month);
+      const res = await insightsApi.list(userId, 0, limit, month);
       set({
         insights: res.data,
         total: res.total,
@@ -108,9 +109,10 @@ export const useInsightsStore = create<InsightsState>((set, get) => ({
 
   /** Sets date range filter and re-fetches from page 1. Clears month. */
   setDateRange: async (userId: string, startDate?: number, endDate?: number) => {
+    const limit = get().limit;
     set({ startDate, endDate, month: undefined, isLoading: true, error: null, offset: 0 });
     try {
-      const res = await insightsApi.list(userId, 0, get().limit, undefined, startDate, endDate);
+      const res = await insightsApi.list(userId, 0, limit, undefined, startDate, endDate);
       set({
         insights: res.data,
         total: res.total,
