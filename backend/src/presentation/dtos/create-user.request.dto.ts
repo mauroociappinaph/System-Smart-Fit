@@ -4,6 +4,10 @@ import { UserGoal } from '../../domain/entities/user.entity';
 export class CreateUserRequestDto {
   @IsString()
   @IsNotEmpty()
+  userId: string;
+
+  @IsString()
+  @IsNotEmpty()
   name: string;
 
   @IsNumber()

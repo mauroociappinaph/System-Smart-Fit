@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserRepository } from '../../application/ports/out/user.repository';
-import { User, UserGoal } from '../../domain/entities/user.entity';
+import { User, UserGoal, UserRole } from '../../domain/entities/user.entity';
 
 @Injectable()
 export class UserPrismaRepository implements UserRepository {
@@ -16,6 +16,7 @@ export class UserPrismaRepository implements UserRepository {
         heightCm: user.heightCm,
         birthDate: user.birthDate,
         goal: user.goal,
+        role: user.role,
         registeredAt: user.registeredAt,
       },
     });
@@ -34,6 +35,7 @@ export class UserPrismaRepository implements UserRepository {
       Number(record.heightCm),
       Number(record.birthDate),
       record.goal as UserGoal,
+      record.role as UserRole,
       Number(record.registeredAt),
     );
 

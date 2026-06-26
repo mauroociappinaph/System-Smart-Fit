@@ -13,23 +13,23 @@ export class CreateUserService implements CreateUserUseCase {
   ) {}
 
   async execute(command: CreateUserCommand): Promise<{ userId: string }> {
-    const userId = randomUUID();
     const eventId = randomUUID();
     const registeredAt = Date.now();
 
     const { entity } = User.register(
-      userId,
+      command.userId,
       eventId,
       command.name,
       command.weightKg,
       command.heightCm,
       command.birthDate,
       command.goal,
+      command.role,
       registeredAt,
     );
 
     await this.userRepository.save(entity);
 
-    return { userId };
+    return { userId: command.userId };
   }
 }
