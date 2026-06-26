@@ -50,7 +50,8 @@ export const useInsightsStore = create<InsightsState>((set, get) => ({
         offset: startOffset + res.data.length,
         isLoading: false,
       });
-    } catch {
+    } catch (err) {
+      console.error('[insights] fetchInsights failed', err);
       set({ error: 'Error al cargar insights', isLoading: false });
     }
   },
@@ -68,7 +69,8 @@ export const useInsightsStore = create<InsightsState>((set, get) => ({
         offset: state.offset + res.data.length,
         isLoading: false,
       }));
-    } catch {
+    } catch (err) {
+      console.error('[insights] loadMore failed', err);
       set({ error: 'Error al cargar más insights', isLoading: false });
     }
   },
@@ -85,7 +87,8 @@ export const useInsightsStore = create<InsightsState>((set, get) => ({
         offset: res.data.length,
         isLoading: false,
       });
-    } catch {
+    } catch (err) {
+      console.error('[insights] refresh failed', err);
       set({ error: 'Error al refrescar insights', isLoading: false });
     }
   },
@@ -102,7 +105,8 @@ export const useInsightsStore = create<InsightsState>((set, get) => ({
         offset: res.data.length,
         isLoading: false,
       });
-    } catch {
+    } catch (err) {
+      console.error('[insights] setMonth failed', err);
       set({ error: 'Error al filtrar insights', isLoading: false });
     }
   },
@@ -119,7 +123,8 @@ export const useInsightsStore = create<InsightsState>((set, get) => ({
         offset: res.data.length,
         isLoading: false,
       });
-    } catch {
+    } catch (err) {
+      console.error('[insights] setDateRange failed', err);
       set({ error: 'Error al filtrar por fechas', isLoading: false });
     }
   },
