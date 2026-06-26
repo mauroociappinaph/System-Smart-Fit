@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/stores/auth.store';
 import { useInsightsStore } from '@/stores/insights.store';
@@ -137,6 +137,12 @@ export default function InsightsPage() {
   const [dateToStr, setDateToStr] = useState(
     () => (endDate ? new Date(endDate).toISOString().split('T')[0] : ''),
   );
+
+  // Refs to avoid stale closures in onChange handlers (#4)
+  const dateFromRef = useRef(dateFromStr);
+  const dateToRef = useRef(dateToStr);
+  useEffect(() => { dateFromRef.current = dateFromStr; }, [dateFromStr]);
+  useEffect(() => { dateToRef.current = dateToStr; }, [dateToStr]);
 
   useEffect(() => {
     if (user) {
@@ -283,9 +289,9 @@ export default function InsightsPage() {
             onChange={(e) => {
               if (!user) return;
               const val = e.target.value;
+              const otherStr = dateToRef.current;
               setDateFromStr(val);
-              if (!val || !dateToStr) {
-                // Single date selected — do a full range with just from
+              if (!val || !otherStr) {
                 if (val) {
                   const ms = new Date(val + 'T00:00:00').getTime();
                   setDateToStr('');
@@ -294,9 +300,8 @@ export default function InsightsPage() {
                   setDateRange(user.id, undefined, undefined);
                 }
               } else {
-                // Both dates filled
                 const fromMs = new Date(val + 'T00:00:00').getTime();
-                const toMs = new Date(dateToStr + 'T23:59:59.999').getTime();
+                const toMs = new Date(otherStr + 'T23:59:59.999').getTime();
                 setDateRange(user.id, fromMs, toMs);
               }
             }}
@@ -310,8 +315,9 @@ export default function InsightsPage() {
             onChange={(e) => {
               if (!user) return;
               const val = e.target.value;
+              const otherStr = dateFromRef.current;
               setDateToStr(val);
-              if (!val || !dateFromStr) {
+              if (!val || !otherStr) {
                 if (val) {
                   const ms = new Date(val + 'T23:59:59.999').getTime();
                   setDateFromStr('');
@@ -320,7 +326,7 @@ export default function InsightsPage() {
                   setDateRange(user.id, undefined, undefined);
                 }
               } else {
-                const fromMs = new Date(dateFromStr + 'T00:00:00').getTime();
+                const fromMs = new Date(otherStr + 'T00:00:00').getTime();
                 const toMs = new Date(val + 'T23:59:59.999').getTime();
                 setDateRange(user.id, fromMs, toMs);
               }
