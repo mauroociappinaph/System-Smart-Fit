@@ -5,10 +5,9 @@ import {
   Body,
   HttpCode,
   HttpStatus,
-  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { SupabaseAuthGuard } from './guards/supabase-auth.guard';
+import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { SignupRequestDto } from '../../presentation/dtos/signup.request.dto';
 import { LoginRequestDto } from '../../presentation/dtos/login.request.dto';
@@ -23,6 +22,7 @@ import {
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Public()
   @Post('signup')
   @HttpCode(HttpStatus.CREATED)
   async signup(
@@ -31,6 +31,7 @@ export class AuthController {
     return this.authService.signup(dto);
   }
 
+  @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(@Body() dto: LoginRequestDto): Promise<LoginResponseDto> {
@@ -38,7 +39,6 @@ export class AuthController {
   }
 
   @Get('me')
-  @UseGuards(SupabaseAuthGuard)
   @HttpCode(HttpStatus.OK)
   async me(
     @CurrentUser() user: { sub: string; email: string; role: string },

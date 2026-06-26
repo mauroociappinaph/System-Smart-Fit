@@ -1,7 +1,12 @@
 import { SupabaseAuthGuard } from './supabase-auth.guard';
 import { UnauthorizedException } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 
 const mockGetUser = jest.fn();
+
+const mockReflector = {
+  getAllAndOverride: jest.fn(),
+} as unknown as Reflector;
 
 const mockSupabaseClient = {
   auth: {
@@ -15,6 +20,8 @@ function createContext(headers: Record<string, string>): any {
     switchToHttp: () => ({
       getRequest: () => request,
     }),
+    getHandler: () => undefined,
+    getClass: () => undefined,
   } as any;
 }
 
@@ -23,7 +30,8 @@ describe('SupabaseAuthGuard', () => {
 
   beforeEach(() => {
     mockGetUser.mockReset();
-    guard = new SupabaseAuthGuard(mockSupabaseClient);
+    mockReflector.getAllAndOverride = jest.fn().mockReturnValue(false);
+    guard = new SupabaseAuthGuard(mockReflector, mockSupabaseClient);
   });
 
   it('should throw UnauthorizedException when no authorization header is present', async () => {
@@ -40,6 +48,8 @@ describe('SupabaseAuthGuard', () => {
       switchToHttp: () => ({
         getRequest: () => request,
       }),
+      getHandler: () => undefined,
+      getClass: () => undefined,
     } as any;
 
     mockGetUser.mockResolvedValue({
@@ -69,6 +79,8 @@ describe('SupabaseAuthGuard', () => {
       switchToHttp: () => ({
         getRequest: () => request,
       }),
+      getHandler: () => undefined,
+      getClass: () => undefined,
     } as any;
 
     mockGetUser.mockResolvedValue({
@@ -90,6 +102,19 @@ describe('SupabaseAuthGuard', () => {
       email: 'user@example.com',
       role: 'USER',
     });
+  });
+
+  it('should return true without checking token when @Public() is set', async () => {
+    guard = new SupabaseAuthGuard(
+      { getAllAndOverride: () => true } as unknown as Reflector,
+      mockSupabaseClient,
+    );
+    const context = createContext({});
+
+    const result = await guard.canActivate(context);
+
+    expect(result).toBe(true);
+    expect(mockGetUser).not.toHaveBeenCalled();
   });
 
   it('should throw UnauthorizedException when token is invalid', async () => {

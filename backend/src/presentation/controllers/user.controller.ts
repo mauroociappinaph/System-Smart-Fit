@@ -7,6 +7,7 @@ import {
   Res,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { Public } from '../../modules/auth/decorators/public.decorator';
 import { CreateUserRequestDto } from '../dtos/create-user.request.dto';
 import { CreateUserService } from '../../application/use-cases/create-user.service';
 import { UserRole } from '../../domain/entities/user.entity';
@@ -15,6 +16,7 @@ import { UserRole } from '../../domain/entities/user.entity';
 export class UserController {
   constructor(private readonly createUserService: CreateUserService) {}
 
+  @Public()
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async register(
