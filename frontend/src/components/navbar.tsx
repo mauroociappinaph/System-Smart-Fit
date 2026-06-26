@@ -5,8 +5,8 @@ import { useState } from 'react';
 import { useAuthStore } from '@/stores/auth.store';
 
 const NAV_LINKS = [
-  { href: '/dashboard/insights', label: 'Dashboard' },
-  { href: '/dashboard/telemetry', label: 'Registrar Métrica' },
+  { href: '/insights', label: 'Dashboard' },
+  { href: '/telemetry', label: 'Registrar Métrica' },
 ] as const;
 
 export function Navbar() {
@@ -38,7 +38,7 @@ export function Navbar() {
       <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
         {/* Brand */}
         <button
-          onClick={() => router.push('/dashboard/insights')}
+          onClick={() => router.push('/insights')}
           className="text-lg font-bold tracking-tight text-zinc-900"
         >
           Smart Fit
