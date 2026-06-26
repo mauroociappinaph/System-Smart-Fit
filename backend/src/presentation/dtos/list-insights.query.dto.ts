@@ -1,6 +1,8 @@
-import { IsString, IsNotEmpty, IsOptional, IsInt, Min, Max } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsInt, Min, Max, Validate } from 'class-validator';
 import { Type } from 'class-transformer';
+import { ValidateDateFiltersConstraint } from './validators/validate-date-filters.constraint';
 
+@Validate(ValidateDateFiltersConstraint)
 export class ListInsightsQueryDto {
   @IsNotEmpty()
   @IsString()
@@ -46,7 +48,6 @@ export class ListInsightsQueryDto {
   /**
    * Start of date range filter (epoch ms).
    * Must not be greater than endDate.
-   * C7 — startDate ≤ endDate consistency validated in service.
    */
   @IsOptional()
   @Type(() => Number)
