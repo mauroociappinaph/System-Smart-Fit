@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/stores/auth.store';
 import { useInsightsStore } from '@/stores/insights.store';
@@ -129,20 +129,13 @@ export default function InsightsPage() {
   const [isValidating, setIsValidating] = useState<string | null>(null);
   const [page, setPage] = useState(1);
 
-  // Local date string state for <input type="date"> (YYYY-MM-DD format)
-  // Derived from store startDate/endDate but stored as string for the native input
-  const [dateFromStr, setDateFromStr] = useState(
-    () => (startDate ? new Date(startDate).toISOString().split('T')[0] : ''),
-  );
-  const [dateToStr, setDateToStr] = useState(
-    () => (endDate ? new Date(endDate).toISOString().split('T')[0] : ''),
-  );
-
-  // Refs to avoid stale closures in onChange handlers (#4)
-  const dateFromRef = useRef(dateFromStr);
-  const dateToRef = useRef(dateToStr);
-  useEffect(() => { dateFromRef.current = dateFromStr; }, [dateFromStr]);
-  useEffect(() => { dateToRef.current = dateToStr; }, [dateToStr]);
+  // Derive date strings from store epoch ms (single source of truth)
+  const dateFromStr = startDate
+    ? new Date(startDate).toISOString().split('T')[0]
+    : '';
+  const dateToStr = endDate
+    ? new Date(endDate).toISOString().split('T')[0]
+    : '';
 
   useEffect(() => {
     if (user) {
@@ -289,19 +282,16 @@ export default function InsightsPage() {
             onChange={(e) => {
               if (!user) return;
               const val = e.target.value;
-              const otherStr = dateToRef.current;
-              setDateFromStr(val);
-              if (!val || !otherStr) {
+              if (!val || !dateToStr) {
                 if (val) {
                   const ms = new Date(val + 'T00:00:00').getTime();
-                  setDateToStr('');
                   setDateRange(user.id, ms, undefined);
                 } else {
                   setDateRange(user.id, undefined, undefined);
                 }
               } else {
                 const fromMs = new Date(val + 'T00:00:00').getTime();
-                const toMs = new Date(otherStr + 'T23:59:59.999').getTime();
+                const toMs = new Date(dateToStr + 'T23:59:59.999').getTime();
                 setDateRange(user.id, fromMs, toMs);
               }
             }}
@@ -315,18 +305,15 @@ export default function InsightsPage() {
             onChange={(e) => {
               if (!user) return;
               const val = e.target.value;
-              const otherStr = dateFromRef.current;
-              setDateToStr(val);
-              if (!val || !otherStr) {
+              if (!val || !dateFromStr) {
                 if (val) {
                   const ms = new Date(val + 'T23:59:59.999').getTime();
-                  setDateFromStr('');
                   setDateRange(user.id, undefined, ms);
                 } else {
                   setDateRange(user.id, undefined, undefined);
                 }
               } else {
-                const fromMs = new Date(otherStr + 'T00:00:00').getTime();
+                const fromMs = new Date(dateFromStr + 'T00:00:00').getTime();
                 const toMs = new Date(val + 'T23:59:59.999').getTime();
                 setDateRange(user.id, fromMs, toMs);
               }
