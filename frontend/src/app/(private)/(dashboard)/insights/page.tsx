@@ -117,14 +117,26 @@ export default function InsightsPage() {
     isLoading,
     error,
     month,
+    startDate,
+    endDate,
     fetchInsights,
     refresh,
     setMonth,
+    setDateRange,
     validateInsight,
   } = useInsightsStore();
 
   const [isValidating, setIsValidating] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+
+  // Local date string state for <input type="date"> (YYYY-MM-DD format)
+  // Derived from store startDate/endDate but stored as string for the native input
+  const [dateFromStr, setDateFromStr] = useState(
+    () => (startDate ? new Date(startDate).toISOString().split('T')[0] : ''),
+  );
+  const [dateToStr, setDateToStr] = useState(
+    () => (endDate ? new Date(endDate).toISOString().split('T')[0] : ''),
+  );
 
   useEffect(() => {
     if (user) {
@@ -242,6 +254,8 @@ export default function InsightsPage() {
             onChange={(e) => {
               if (!user) return;
               const val = e.target.value;
+              setDateFromStr('');
+              setDateToStr('');
               setMonth(user.id, val ? Number(val) : undefined);
             }}
             className="cursor-pointer rounded-lg border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 transition-colors hover:bg-zinc-50"
@@ -261,6 +275,59 @@ export default function InsightsPage() {
             <option value="11">Noviembre</option>
             <option value="12">Diciembre</option>
           </select>
+
+          {/* Date range filter (mutually exclusive with month) */}
+          <input
+            type="date"
+            value={dateFromStr}
+            onChange={(e) => {
+              if (!user) return;
+              const val = e.target.value;
+              setDateFromStr(val);
+              if (!val || !dateToStr) {
+                // Single date selected — do a full range with just from
+                if (val) {
+                  const ms = new Date(val + 'T00:00:00').getTime();
+                  setDateToStr('');
+                  setDateRange(user.id, ms, undefined);
+                } else {
+                  setDateRange(user.id, undefined, undefined);
+                }
+              } else {
+                // Both dates filled
+                const fromMs = new Date(val + 'T00:00:00').getTime();
+                const toMs = new Date(dateToStr + 'T23:59:59.999').getTime();
+                setDateRange(user.id, fromMs, toMs);
+              }
+            }}
+            className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 transition-colors hover:bg-zinc-50"
+            aria-label="Fecha desde"
+          />
+          <span className="text-sm text-zinc-400">→</span>
+          <input
+            type="date"
+            value={dateToStr}
+            onChange={(e) => {
+              if (!user) return;
+              const val = e.target.value;
+              setDateToStr(val);
+              if (!val || !dateFromStr) {
+                if (val) {
+                  const ms = new Date(val + 'T23:59:59.999').getTime();
+                  setDateFromStr('');
+                  setDateRange(user.id, undefined, ms);
+                } else {
+                  setDateRange(user.id, undefined, undefined);
+                }
+              } else {
+                const fromMs = new Date(dateFromStr + 'T00:00:00').getTime();
+                const toMs = new Date(val + 'T23:59:59.999').getTime();
+                setDateRange(user.id, fromMs, toMs);
+              }
+            }}
+            className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 transition-colors hover:bg-zinc-50"
+            aria-label="Fecha hasta"
+          />
 
           <button
             onClick={() => user && refresh(user.id)}
