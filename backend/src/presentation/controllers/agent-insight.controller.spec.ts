@@ -115,6 +115,7 @@ describe('AgentInsightController', () => {
         limit: undefined,
         offset: undefined,
         month: undefined,
+        year: undefined,
         startDate: undefined,
         endDate: undefined,
       });
@@ -150,6 +151,7 @@ describe('AgentInsightController', () => {
         limit: 10,
         offset: 20,
         month: undefined,
+        year: undefined,
         startDate: undefined,
         endDate: undefined,
       });
@@ -170,6 +172,7 @@ describe('AgentInsightController', () => {
         limit: undefined,
         offset: undefined,
         month: 3,
+        year: undefined,
         startDate: undefined,
         endDate: undefined,
       });
@@ -189,6 +192,7 @@ describe('AgentInsightController', () => {
         limit: undefined,
         offset: undefined,
         month: undefined,
+        year: undefined,
         startDate: 1700000000000,
         endDate: 1700100000000,
       });

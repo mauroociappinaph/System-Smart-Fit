@@ -66,6 +66,7 @@ export class AgentInsightController {
         limit: query.limit,
         offset: query.offset,
         month: query.month,
+        year: query.year,
         startDate: query.startDate,
         endDate: query.endDate,
       },

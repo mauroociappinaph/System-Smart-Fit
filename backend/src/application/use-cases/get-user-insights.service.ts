@@ -7,6 +7,7 @@ export interface GetUserInsightsOptions {
   limit?: number;
   offset?: number;
   month?: number;
+  year?: number;
   startDate?: number;
   endDate?: number;
 }
@@ -39,7 +40,7 @@ export class GetUserInsightsService implements GetUserInsightsUseCase {
   private buildDateFilter(
     options?: GetUserInsightsOptions,
   ): { startDate?: number; endDate?: number } | undefined {
-    const { month, startDate, endDate } = options ?? {};
+    const { month, year, startDate, endDate } = options ?? {};
 
     // month is mutually exclusive with startDate/endDate
     if (month !== undefined && startDate !== undefined) {
@@ -49,11 +50,10 @@ export class GetUserInsightsService implements GetUserInsightsUseCase {
     }
 
     if (month !== undefined) {
-      const now = new Date();
-      const year = now.getFullYear();
+      const referenceYear = year ?? new Date().getFullYear();
       return {
-        startDate: new Date(year, month - 1, 1).getTime(),
-        endDate: new Date(year, month, 0, 23, 59, 59, 999).getTime(),
+        startDate: new Date(referenceYear, month - 1, 1).getTime(),
+        endDate: new Date(referenceYear, month, 0, 23, 59, 59, 999).getTime(),
       };
     }
 

@@ -32,6 +32,18 @@ export class ListInsightsQueryDto {
   month?: number;
 
   /**
+   * Optional year to use with month filter (e.g., 2024).
+   * If not provided, defaults to current year.
+   * Only relevant when `month` is provided.
+   */
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(2020)
+  @Max(2030)
+  year?: number;
+
+  /**
    * Start of date range filter (epoch ms).
    * Must not be greater than endDate.
    * C7 — startDate ≤ endDate consistency validated in service.
