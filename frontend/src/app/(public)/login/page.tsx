@@ -43,11 +43,12 @@ export default function LoginPage() {
     if (!validate()) return;
 
     const user = await login({ email: email.trim(), password });
+    const storeError = useAuthStore.getState().error;
     if (user) {
       toast.success('Inicio de sesión exitoso');
       router.push('/dashboard/insights');
-    } else if (error) {
-      toast.error(error);
+    } else if (storeError) {
+      toast.error(storeError);
     }
   }
 

@@ -85,11 +85,12 @@ export default function RegisterPage() {
     if (goal.trim()) dto.goal = goal.trim();
 
     const user = await signup(dto);
+    const storeError = useAuthStore.getState().error;
     if (user) {
       toast.success('Registro exitoso');
       router.push('/dashboard/insights');
-    } else if (error) {
-      toast.error(error);
+    } else if (storeError) {
+      toast.error(storeError);
     }
   }
 
