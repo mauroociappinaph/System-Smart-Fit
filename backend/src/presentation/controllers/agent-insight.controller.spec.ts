@@ -112,6 +112,9 @@ describe('AgentInsightController', () => {
       expect(mockListService.execute).toHaveBeenCalledWith('user-1', {
         limit: undefined,
         offset: undefined,
+        month: undefined,
+        startDate: undefined,
+        endDate: undefined,
       });
 
       expect(result).toEqual({
@@ -145,6 +148,50 @@ describe('AgentInsightController', () => {
       expect(mockListService.execute).toHaveBeenCalledWith('user-2', {
         limit: 10,
         offset: 20,
+        month: undefined,
+        startDate: undefined,
+        endDate: undefined,
+      });
+    });
+
+    // ── C3 + C7: new optional filters ────────────────────────
+
+    it('should pass month filter to service', async () => {
+      mockListService.execute.mockResolvedValue({ data: [], total: 0 });
+
+      const query: ListInsightsQueryDto = {
+        userId: 'user-1',
+        month: 3,
+      };
+
+      await controller.list(query);
+
+      expect(mockListService.execute).toHaveBeenCalledWith('user-1', {
+        limit: undefined,
+        offset: undefined,
+        month: 3,
+        startDate: undefined,
+        endDate: undefined,
+      });
+    });
+
+    it('should pass startDate/endDate filter to service', async () => {
+      mockListService.execute.mockResolvedValue({ data: [], total: 0 });
+
+      const query: ListInsightsQueryDto = {
+        userId: 'user-1',
+        startDate: 1700000000000,
+        endDate: 1700100000000,
+      };
+
+      await controller.list(query);
+
+      expect(mockListService.execute).toHaveBeenCalledWith('user-1', {
+        limit: undefined,
+        offset: undefined,
+        month: undefined,
+        startDate: 1700000000000,
+        endDate: 1700100000000,
       });
     });
   });

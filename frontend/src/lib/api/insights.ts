@@ -24,10 +24,23 @@ export function list(
   userId: string,
   offset = 0,
   limit = 10,
+  month?: number,
+  startDate?: number,
+  endDate?: number,
 ): Promise<ListResponse> {
-  return api
-    .get('/insights', { params: { userId, offset, limit } })
-    .then((res) => res.data);
+  const params: Record<string, string | number | undefined> = {
+    userId,
+    offset,
+    limit,
+    month,
+    startDate,
+    endDate,
+  };
+  // Remove undefined keys so they don't pollute the query string
+  Object.keys(params).forEach(
+    (k) => params[k] === undefined && delete params[k],
+  );
+  return api.get('/insights', { params }).then((res) => res.data);
 }
 
 export function validate(

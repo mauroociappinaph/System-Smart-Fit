@@ -9,11 +9,15 @@ export interface InsightsState {
   limit: number;
   isLoading: boolean;
   error: string | null;
+  /** Selected month filter (1-12) or undefined for "all" */
+  month?: number;
   /** @internal used to prevent stale rollback in concurrent validateInsight calls */
   _validateVersion: number;
 
   fetchInsights: (userId: string, pageOffset?: number) => Promise<void>;
   loadMore: (userId: string) => Promise<void>;
+  refresh: (userId: string) => Promise<void>;
+  setMonth: (userId: string, month?: number) => Promise<void>;
   validateInsight: (
     id: string,
     action: 'approve' | 'reject' | 'discard',
@@ -31,9 +35,10 @@ export const useInsightsStore = create<InsightsState>((set, get) => ({
 
   fetchInsights: async (userId: string, pageOffset?: number) => {
     const startOffset = pageOffset ?? 0;
+    const month = get().month;
     set({ isLoading: true, error: null, offset: startOffset });
     try {
-      const res = await insightsApi.list(userId, startOffset, get().limit);
+      const res = await insightsApi.list(userId, startOffset, get().limit, month);
       set({
         insights: res.data,
         total: res.total,
@@ -46,12 +51,12 @@ export const useInsightsStore = create<InsightsState>((set, get) => ({
   },
 
   loadMore: async (userId: string) => {
-    const { offset, limit, isLoading } = get();
+    const { offset, limit, isLoading, month } = get();
     if (isLoading) return;
 
     set({ isLoading: true });
     try {
-      const res = await insightsApi.list(userId, offset, limit);
+      const res = await insightsApi.list(userId, offset, limit, month);
       set((state) => ({
         insights: [...state.insights, ...res.data],
         total: res.total,
@@ -60,6 +65,39 @@ export const useInsightsStore = create<InsightsState>((set, get) => ({
       }));
     } catch {
       set({ error: 'Error al cargar más insights', isLoading: false });
+    }
+  },
+
+  /** Re-fetches the first page — useful after validation or manual refresh */
+  refresh: async (userId: string) => {
+    const { limit, month } = get();
+    set({ isLoading: true, error: null, offset: 0 });
+    try {
+      const res = await insightsApi.list(userId, 0, limit, month);
+      set({
+        insights: res.data,
+        total: res.total,
+        offset: res.data.length,
+        isLoading: false,
+      });
+    } catch {
+      set({ error: 'Error al refrescar insights', isLoading: false });
+    }
+  },
+
+  /** Changes month filter and re-fetches from page 1 */
+  setMonth: async (userId: string, month?: number) => {
+    set({ month, isLoading: true, error: null, offset: 0 });
+    try {
+      const res = await insightsApi.list(userId, 0, get().limit, month);
+      set({
+        insights: res.data,
+        total: res.total,
+        offset: res.data.length,
+        isLoading: false,
+      });
+    } catch {
+      set({ error: 'Error al filtrar insights', isLoading: false });
     }
   },
 

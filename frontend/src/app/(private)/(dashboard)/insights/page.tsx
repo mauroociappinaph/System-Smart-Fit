@@ -116,7 +116,10 @@ export default function InsightsPage() {
     limit,
     isLoading,
     error,
+    month,
     fetchInsights,
+    refresh,
+    setMonth,
     validateInsight,
   } = useInsightsStore();
 
@@ -224,11 +227,50 @@ export default function InsightsPage() {
   // ── List ─────────────────────────────────────
   return (
     <section>
-      <div className="mb-6 flex flex-col gap-1">
-        <h1 className="text-xl font-bold text-zinc-900">Insights</h1>
-        <p className="text-sm text-zinc-500">
-          Recomendaciones personalizadas generadas por Smart Fit
-        </p>
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-xl font-bold text-zinc-900">Insights</h1>
+          <p className="text-sm text-zinc-500">
+            Recomendaciones personalizadas generadas por Smart Fit
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {/* Month filter */}
+          <select
+            value={month ?? ''}
+            onChange={(e) => {
+              if (!user) return;
+              const val = e.target.value;
+              setMonth(user.id, val ? Number(val) : undefined);
+            }}
+            className="cursor-pointer rounded-lg border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 transition-colors hover:bg-zinc-50"
+            aria-label="Filtrar por mes"
+          >
+            <option value="">Todos los meses</option>
+            <option value="1">Enero</option>
+            <option value="2">Febrero</option>
+            <option value="3">Marzo</option>
+            <option value="4">Abril</option>
+            <option value="5">Mayo</option>
+            <option value="6">Junio</option>
+            <option value="7">Julio</option>
+            <option value="8">Agosto</option>
+            <option value="9">Septiembre</option>
+            <option value="10">Octubre</option>
+            <option value="11">Noviembre</option>
+            <option value="12">Diciembre</option>
+          </select>
+
+          <button
+            onClick={() => user && refresh(user.id)}
+            disabled={isLoading}
+            className="shrink-0 rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40"
+            aria-label="Refrescar insights"
+          >
+            {isLoading ? '⋯' : '↻'}
+          </button>
+        </div>
       </div>
 
       {/* Cards */}

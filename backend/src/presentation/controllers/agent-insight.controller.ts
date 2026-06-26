@@ -60,7 +60,13 @@ export class AgentInsightController {
   }> {
     const { data, total } = await this.getUserInsightsService.execute(
       query.userId,
-      { limit: query.limit, offset: query.offset },
+      {
+        limit: query.limit,
+        offset: query.offset,
+        month: query.month,
+        startDate: query.startDate,
+        endDate: query.endDate,
+      },
     );
 
     return {

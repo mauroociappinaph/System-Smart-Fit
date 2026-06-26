@@ -18,4 +18,35 @@ export class ListInsightsQueryDto {
   @IsInt()
   @Min(0)
   offset?: number;
+
+  /**
+   * Filter by month (1–12). 
+   * Mutually exclusive with startDate/endDate.
+   * C3 — ensures month does not exceed 12.
+   */
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(12)
+  month?: number;
+
+  /**
+   * Start of date range filter (epoch ms).
+   * Must not be greater than endDate.
+   * C7 — startDate ≤ endDate consistency validated in service.
+   */
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  startDate?: number;
+
+  /**
+   * End of date range filter (epoch ms).
+   * Must not be less than startDate.
+   */
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  endDate?: number;
 }

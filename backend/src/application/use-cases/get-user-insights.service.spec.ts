@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { GetUserInsightsService } from './get-user-insights.service';
 import { AgentInsightRepository } from '../ports/out/agent-insight.repository';
 import { AgentInsight, ValidationStatus } from '../../domain/entities/agent-insight.entity';
@@ -39,8 +40,8 @@ describe('GetUserInsightsService', () => {
 
     expect(result.data).toHaveLength(2);
     expect(result.total).toBe(2);
-    expect(mockRepo.findByUserId).toHaveBeenCalledWith('user-1', { limit: 10, offset: 0 });
-    expect(mockRepo.countByUserId).toHaveBeenCalledWith('user-1');
+    expect(mockRepo.findByUserId).toHaveBeenCalledWith('user-1', { limit: 10, offset: 0, dateFilter: undefined });
+    expect(mockRepo.countByUserId).toHaveBeenCalledWith('user-1', undefined);
   });
 
   it('should return empty list when no insights exist', async () => {
@@ -51,5 +52,87 @@ describe('GetUserInsightsService', () => {
 
     expect(result.data).toHaveLength(0);
     expect(result.total).toBe(0);
+  });
+
+  // ── C3 — month filter ─────────────────────────────────────
+
+  it('should convert month to date range filter', async () => {
+    mockRepo.findByUserId.mockResolvedValue([]);
+    mockRepo.countByUserId.mockResolvedValue(0);
+
+    await service.execute('user-1', { month: 3 });
+
+    const today = new Date();
+    const year = today.getFullYear();
+    const expectedStart = new Date(year, 2, 1).getTime();       // March 1
+    const expectedEnd = new Date(year, 3, 0, 23, 59, 59, 999).getTime(); // March 31
+
+    expect(mockRepo.findByUserId).toHaveBeenCalledWith('user-1', {
+      limit: undefined,
+      offset: undefined,
+      dateFilter: { startDate: expectedStart, endDate: expectedEnd },
+    });
+    expect(mockRepo.countByUserId).toHaveBeenCalledWith('user-1', {
+      startDate: expectedStart,
+      endDate: expectedEnd,
+    });
+  });
+
+  it('should pass startDate/endDate directly', async () => {
+    const startDate = 1700000000000;
+    const endDate = 1700100000000;
+    mockRepo.findByUserId.mockResolvedValue([]);
+    mockRepo.countByUserId.mockResolvedValue(0);
+
+    await service.execute('user-1', { startDate, endDate });
+
+    expect(mockRepo.findByUserId).toHaveBeenCalledWith('user-1', {
+      limit: undefined,
+      offset: undefined,
+      dateFilter: { startDate, endDate },
+    });
+    expect(mockRepo.countByUserId).toHaveBeenCalledWith('user-1', { startDate, endDate });
+  });
+
+  // ── C7 — startDate ≤ endDate validation ───────────────────
+
+  it('should throw if startDate > endDate', async () => {
+    await expect(
+      service.execute('user-1', { startDate: 2000, endDate: 1000 }),
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it('should throw if month and startDate are both provided', async () => {
+    await expect(
+      service.execute('user-1', { month: 3, startDate: 1000 }),
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it('should allow only startDate without endDate', async () => {
+    const startDate = 1700000000000;
+    mockRepo.findByUserId.mockResolvedValue([]);
+    mockRepo.countByUserId.mockResolvedValue(0);
+
+    await service.execute('user-1', { startDate });
+
+    expect(mockRepo.findByUserId).toHaveBeenCalledWith('user-1', {
+      limit: undefined,
+      offset: undefined,
+      dateFilter: { startDate, endDate: undefined },
+    });
+  });
+
+  it('should allow only endDate without startDate', async () => {
+    const endDate = 1700100000000;
+    mockRepo.findByUserId.mockResolvedValue([]);
+    mockRepo.countByUserId.mockResolvedValue(0);
+
+    await service.execute('user-1', { endDate });
+
+    expect(mockRepo.findByUserId).toHaveBeenCalledWith('user-1', {
+      limit: undefined,
+      offset: undefined,
+      dateFilter: { startDate: undefined, endDate },
+    });
   });
 });

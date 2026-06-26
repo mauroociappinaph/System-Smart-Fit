@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { AgentInsightRepository } from '../../../application/ports/out/agent-insight.repository';
+import {
+  AgentInsightRepository,
+  FindByUserIdOptions,
+  DateFilter,
+} from '../../../application/ports/out/agent-insight.repository';
 import {
   AgentInsight,
   ValidationStatus,
@@ -40,10 +44,10 @@ export class AgentInsightPrismaRepository implements AgentInsightRepository {
 
   async findByUserId(
     userId: string,
-    options?: { limit?: number; offset?: number },
+    options?: FindByUserIdOptions,
   ): Promise<AgentInsight[]> {
     const records = await this.prisma.agentInsight.findMany({
-      where: { userId },
+      where: { userId, ...this.buildDateWhere(options?.dateFilter) },
       orderBy: { createdAt: 'desc' },
       take: options?.limit ?? 50,
       skip: options?.offset ?? 0,
@@ -52,10 +56,27 @@ export class AgentInsightPrismaRepository implements AgentInsightRepository {
     return records.map((r) => this.toDomain(r));
   }
 
-  async countByUserId(userId: string): Promise<number> {
+  async countByUserId(
+    userId: string,
+    dateFilter?: DateFilter,
+  ): Promise<number> {
     return this.prisma.agentInsight.count({
-      where: { userId },
+      where: { userId, ...this.buildDateWhere(dateFilter) },
     });
+  }
+
+  private buildDateWhere(
+    dateFilter?: DateFilter,
+  ): { createdAt?: { gte?: number; lte?: number } } {
+    if (!dateFilter) return {};
+    const where: { createdAt?: { gte?: number; lte?: number } } = {};
+    if (dateFilter.startDate !== undefined) {
+      where.createdAt = { ...where.createdAt, gte: dateFilter.startDate };
+    }
+    if (dateFilter.endDate !== undefined) {
+      where.createdAt = { ...where.createdAt, lte: dateFilter.endDate };
+    }
+    return where;
   }
 
   private toDomain(record: {
