@@ -2,14 +2,22 @@ import { create } from 'zustand';
 import type { LoginDTO, SignupDTO, MeResponse } from '@/lib/api/auth';
 import * as authApi from '@/lib/api/auth';
 
+function extractError(err: unknown, fallback: string): string {
+  if (err && typeof err === 'object' && 'response' in err) {
+    const resp = (err as { response: { data?: { message?: string } } }).response?.data;
+    return resp?.message ?? fallback;
+  }
+  return 'Error de conexión';
+}
+
 export interface AuthState {
   user: MeResponse | null;
   token: string | null;
   isLoading: boolean;
   error: string | null;
 
-  login: (dto: LoginDTO) => Promise<void>;
-  signup: (dto: SignupDTO) => Promise<void>;
+  login: (dto: LoginDTO) => Promise<MeResponse | null>;
+  signup: (dto: SignupDTO) => Promise<MeResponse | null>;
   logout: () => void;
   loadSession: () => Promise<void>;
 }
@@ -25,15 +33,15 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const res = await authApi.login(dto);
       localStorage.setItem('auth_token', res.accessToken);
-      set({ token: res.accessToken, user: res.user as MeResponse, isLoading: false });
+      set({ token: res.accessToken, isLoading: false });
+      // Fetch full profile instead of casting partial AuthResponse.user
+      const user = await authApi.getMe();
+      set({ user });
+      return user;
     } catch (err: unknown) {
-      const message =
-        err && typeof err === 'object' && 'response' in err
-          ? (err as { response: { data?: { message?: string } } }).response?.data
-              ?.message || 'Credenciales inválidas'
-          : 'Error de conexión';
+      const message = extractError(err, 'Credenciales inválidas');
       set({ error: message, isLoading: false });
-      throw new Error(message);
+      return null;
     }
   },
 
@@ -42,20 +50,20 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const res = await authApi.signup(dto);
       localStorage.setItem('auth_token', res.accessToken);
-      set({ token: res.accessToken, user: res.user as MeResponse, isLoading: false });
+      set({ token: res.accessToken, isLoading: false });
+      const user = await authApi.getMe();
+      set({ user });
+      return user;
     } catch (err: unknown) {
-      const message =
-        err && typeof err === 'object' && 'response' in err
-          ? (err as { response: { data?: { message?: string } } }).response?.data
-              ?.message || 'Error al registrar'
-          : 'Error de conexión';
+      const message = extractError(err, 'Error al registrar');
       set({ error: message, isLoading: false });
-      throw new Error(message);
+      return null;
     }
   },
 
   logout: () => {
     localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth-storage');
     set({ user: null, token: null, error: null });
   },
 

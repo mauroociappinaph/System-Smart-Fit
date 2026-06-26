@@ -20,8 +20,12 @@ api.interceptors.response.use(
   (res) => res,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('auth_token');
-      window.location.href = '/login';
+      const url: string = error.config?.url ?? '';
+      // Don't redirect on auth endpoints — those are credential errors, not session expiry
+      if (!url.startsWith('/auth/')) {
+        localStorage.removeItem('auth_token');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   },

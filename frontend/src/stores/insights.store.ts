@@ -55,7 +55,7 @@ export const useInsightsStore = create<InsightsState>((set, get) => ({
         isLoading: false,
       }));
     } catch {
-      set({ isLoading: false });
+      set({ error: 'Error al cargar más insights', isLoading: false });
     }
   },
 
