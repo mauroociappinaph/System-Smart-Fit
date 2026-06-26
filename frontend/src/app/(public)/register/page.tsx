@@ -57,6 +57,17 @@ export default function RegisterPage() {
       errors.heightCm = 'Ingresa una altura válida en cm';
     }
 
+    if (birthDate) {
+      const parsed = new Date(birthDate).getTime();
+      if (isNaN(parsed)) {
+        errors.birthDate = 'Fecha de nacimiento inválida';
+      } else if (parsed > Date.now()) {
+        errors.birthDate = 'La fecha no puede ser futura';
+      } else if (parsed < new Date('1900-01-01').getTime()) {
+        errors.birthDate = 'Fecha de nacimiento no válida';
+      }
+    }
+
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   }
@@ -81,14 +92,17 @@ export default function RegisterPage() {
 
     if (weightKg) dto.weightKg = Number(weightKg);
     if (heightCm) dto.heightCm = Number(heightCm);
-    if (birthDate) dto.birthDate = new Date(birthDate).getTime();
+    if (birthDate) {
+      const ts = new Date(birthDate).getTime();
+      if (!isNaN(ts)) dto.birthDate = ts;
+    }
     if (goal.trim()) dto.goal = goal.trim();
 
     const user = await signup(dto);
     const storeError = useAuthStore.getState().error;
     if (user) {
       toast.success('Registro exitoso');
-      router.push('/dashboard/insights');
+      router.push('/insights');
     } else if (storeError) {
       toast.error(storeError);
     }

@@ -9,8 +9,10 @@ export interface InsightsState {
   limit: number;
   isLoading: boolean;
   error: string | null;
+  /** @internal used to prevent stale rollback in concurrent validateInsight calls */
+  _validateVersion: number;
 
-  fetchInsights: (userId: string) => Promise<void>;
+  fetchInsights: (userId: string, pageOffset?: number) => Promise<void>;
   loadMore: (userId: string) => Promise<void>;
   validateInsight: (
     id: string,
@@ -25,15 +27,17 @@ export const useInsightsStore = create<InsightsState>((set, get) => ({
   limit: 10,
   isLoading: false,
   error: null,
+  _validateVersion: 0,
 
-  fetchInsights: async (userId: string) => {
-    set({ isLoading: true, error: null, offset: 0 });
+  fetchInsights: async (userId: string, pageOffset?: number) => {
+    const startOffset = pageOffset ?? 0;
+    set({ isLoading: true, error: null, offset: startOffset });
     try {
-      const res = await insightsApi.list(userId, 0, get().limit);
+      const res = await insightsApi.list(userId, startOffset, get().limit);
       set({
         insights: res.data,
         total: res.total,
-        offset: res.data.length,
+        offset: startOffset + res.data.length,
         isLoading: false,
       });
     } catch {
@@ -63,6 +67,9 @@ export const useInsightsStore = create<InsightsState>((set, get) => ({
     id: string,
     action: 'approve' | 'reject' | 'discard',
   ) => {
+    const entry = get()._validateVersion + 1;
+    set({ _validateVersion: entry });
+
     const previous = get().insights;
     // Optimistic remove
     set((state) => ({
@@ -71,9 +78,12 @@ export const useInsightsStore = create<InsightsState>((set, get) => ({
 
     try {
       await insightsApi.validate(id, { action });
-    } catch {
-      // Rollback on failure
-      set({ insights: previous });
+    } catch (err) {
+      // Only rollback if no newer validation has started (prevents stale rollback)
+      if (get()._validateVersion === entry) {
+        set({ insights: previous });
+      }
+      throw err; // Propagate so component can show toast
     }
   },
 }));

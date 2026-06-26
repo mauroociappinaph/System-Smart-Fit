@@ -33,12 +33,15 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const res = await authApi.login(dto);
       localStorage.setItem('auth_token', res.accessToken);
-      set({ token: res.accessToken, isLoading: false });
+      set({ token: res.accessToken });
       // Fetch full profile instead of casting partial AuthResponse.user
       const user = await authApi.getMe();
-      set({ user });
+      set({ user, isLoading: false });
       return user;
     } catch (err: unknown) {
+      // Cleanup token if getMe fails after a successful login
+      localStorage.removeItem('auth_token');
+      set({ token: null, user: null });
       const message = extractError(err, 'Credenciales inválidas');
       set({ error: message, isLoading: false });
       return null;
@@ -50,11 +53,14 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const res = await authApi.signup(dto);
       localStorage.setItem('auth_token', res.accessToken);
-      set({ token: res.accessToken, isLoading: false });
+      set({ token: res.accessToken });
       const user = await authApi.getMe();
-      set({ user });
+      set({ user, isLoading: false });
       return user;
     } catch (err: unknown) {
+      // Cleanup token if getMe fails after a successful signup
+      localStorage.removeItem('auth_token');
+      set({ token: null, user: null });
       const message = extractError(err, 'Error al registrar');
       set({ error: message, isLoading: false });
       return null;

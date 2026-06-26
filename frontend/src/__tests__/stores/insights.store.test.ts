@@ -85,7 +85,9 @@ describe('insights.store', () => {
     useInsightsStore.setState({ insights: [target, other] });
     vi.mocked(insightsApi.validate).mockRejectedValue(new Error('API error'));
 
-    await useInsightsStore.getState().validateInsight('i-rollback', 'reject');
+    await expect(
+      useInsightsStore.getState().validateInsight('i-rollback', 'reject'),
+    ).rejects.toThrow('API error');
 
     // Should have rolled back both items
     expect(useInsightsStore.getState().insights).toHaveLength(2);

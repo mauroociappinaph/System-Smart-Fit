@@ -113,12 +113,10 @@ export default function InsightsPage() {
   const {
     insights,
     total,
-    offset,
     limit,
     isLoading,
     error,
     fetchInsights,
-    loadMore,
     validateInsight,
   } = useInsightsStore();
 
@@ -153,8 +151,9 @@ export default function InsightsPage() {
 
   function handleNextPage() {
     if (!user) return;
-    setPage((p) => p + 1);
-    loadMore(user.id);
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchInsights(user.id, (nextPage - 1) * limit);
   }
 
   function handlePrevPage() {

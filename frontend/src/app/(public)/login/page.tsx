@@ -46,7 +46,7 @@ export default function LoginPage() {
     const storeError = useAuthStore.getState().error;
     if (user) {
       toast.success('Inicio de sesión exitoso');
-      router.push('/dashboard/insights');
+      router.push('/insights');
     } else if (storeError) {
       toast.error(storeError);
     }
