@@ -45,7 +45,7 @@ export class GetUserInsightsService implements GetUserInsightsUseCase {
     // month is mutually exclusive with startDate/endDate
     if (month !== undefined && startDate !== undefined) {
       throw new BadRequestException(
-        'month is mutually exclusive with startDate/endDate',
+        'No se puede combinar el filtro por mes con el rango de fechas',
       );
     }
 
@@ -61,7 +61,7 @@ export class GetUserInsightsService implements GetUserInsightsUseCase {
       // C7 — startDate must not be greater than endDate
       if (startDate !== undefined && endDate !== undefined && startDate > endDate) {
         throw new BadRequestException(
-          'startDate must not be greater than endDate',
+          'La fecha de inicio no puede ser mayor a la fecha de fin',
         );
       }
       return { startDate, endDate };
