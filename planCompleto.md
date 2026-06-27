@@ -18,6 +18,7 @@
 8. [GitHub Actions e Integración Continua](#8-github-actions-e-integración-continua)
 9. [Base de Datos, Persistencia y pgvector](#9-base-de-datos-persistencia-y-pgvector)
 10. [Seguridad y Autorización Defensiva](#10-seguridad-y-autorización-defensiva)
+    - 10.3 [Compliance y Gobernanza de Datos de Salud](#103-compliance-y-gobernanza-de-datos-de-salud)
 11. [Inteligencia Artificial (NVIDIA NIM)](#11-inteligencia-artificial-nvidia-nim)
 12. [DevOps y Orquestación de Infraestructura](#12-devops-y-orquestación-de-infraestructura)
 13. [Documentación Estándar de la Plataforma](#13-documentación-estándar-de-la-plataforma)
@@ -493,6 +494,129 @@ lint.yml  frontend-tests.yml  backend-tests.yml
 | **Helmet + CORS** | Cabeceras HTTP de seguridad. CORS restrictivo solo al dominio de Next.js en producción |
 | **Zod Validation** | Validación estructural de payload en cada endpoint REST y consumidor de eventos |
 | **Secret Management** | Vault o variables de entorno cifradas de Supabase. Prohibición absoluta de secrets en el código base |
+
+### 10.3 Compliance y Gobernanza de Datos de Salud
+
+Fitt procesa datos de salud en múltiples jurisdicciones. La gobernanza de datos no es una característica accesoria — es un requisito fundacional que define la arquitectura de almacenamiento, el flujo de inferencia de IA y los contratos con proveedores. Esta sección establece el marco de cumplimiento regulatorio, la cadena de responsabilidad sobre los datos y los mecanismos técnicos que garantizan la protección de la información clínica del usuario en cada etapa del pipeline.
+
+#### 10.3.1 Jurisdicciones y Marcos Regulatorios
+
+La aplicación opera bajo un modelo de cumplimiento multijurisdiccional. Cada marco impone obligaciones específicas sobre consentimiento, almacenamiento, transferencia transfronteriza y notificación de incidentes.
+
+| Jurisdicción | Marco Regulatorio | Ámbito | Requisitos Clave |
+|-------------|-------------------|--------|-----------------|
+| Estados Unidos | HIPAA (Health Insurance Portability and Accountability Act) | Datos PHI (Protected Health Information) | Cifrado end-to-end, BAAs con proveedores, logs de acceso, notificación de brechas en 60 días |
+| Unión Europea | GDPR (General Data Protection Regulation) | Datos personales de salud (Art. 9 — categorías especiales) | Consentimiento explícito, derecho al olvido, DPIA obligatorio, DPA con procesadores |
+| Argentina | Ley 25.326 / PDPA (Protección de Datos Personales) | Datos sensibles de salud (Art. 2) | Consentimiento expreso y escrito, inscripción en AAIP, prohibición de transferencia sin protección equivalente |
+| Brasil | LGPD (Lei Geral de Proteção de Dados) | Datos pessoais sensíveis (Art. 5-II) | Consentimiento específico, encarregado DPO, relatório de impacto |
+| México | LFPDPPP (Ley Federal de Protección de Datos) | Datos de salud | Aviso de privacidad, consentimiento expreso, medidas de seguridad administrativas/técnicas/físicas |
+
+**Principio operativo**: Fitt adopta el estándar más restrictivo entre las jurisdicciones aplicables para cada categoría de dato. Si GDPR exige consentimiento explícito y PDPA exige consentimiento por escrito, se implementa el mecanismo que satisface ambos.
+
+#### 10.3.2 Acuerdo de Procesamiento de Datos (DPA) con Proveedores
+
+Cada proveedor externo que toca datos de salud — incluso en tránsito o de forma efímera — debe tener un DPA vigente que establezca obligaciones de confidencialidad, limitación de uso y notificación de brechas.
+
+| Proveedor | Servicio | DPA Requerido | Cobertura |
+|-----------|----------|---------------|-----------|
+| Supabase | PostgreSQL + pgvector + Auth | ✅ Incluido en plan Enterprise / Team | Cifrado en reposo (AES-256), cifrado en tránsito (TLS 1.3), SOC 2 Type II, aislamiento de datos por proyecto |
+| NVIDIA NIM | Inferencia IA | ⚠️ Verificar | Datos en tránsito (TLS), sin persistencia de prompts/respuestas en disco, zero data retention |
+| Redis (Upstash / Redis Enterprise) | Caché semántica | ✅ | Cifrado en tránsito (TLS), cifrado en reposo, sin persistencia de datos de salud en caché |
+
+> ⚠️ **Regla de arquitectura**: Nunca enviar datos PHI crudos a NVIDIA NIM. El `Health Data Agent` (Sección 8.3) actúa como barrera de anonimización: agrega, desidentifica y tokeniza los datos de telemetría antes de que cualquier prompt llegue al motor de inferencia. NIM recibe vectores semánticos y contextos agregados, nunca datos identificables.
+
+#### 10.3.3 Cifrado y Protección de Datos
+
+El cifrado se aplica en tres capas independientes. Ninguna capa depende de la correcta implementación de las otras — si una falla, las demás mantienen la protección.
+
+| Capa | Mecanismo | Estándar |
+|------|-----------|----------|
+| **En reposo** | AES-256-GCM (Supabase gestionado, Postgres TDE) | FIPS 140-2 |
+| **En tránsito** | TLS 1.3 (mínimo TLS 1.2) con HSTS | NIST SP 800-52 |
+| **A nivel de aplicación** | Cifrado de campos sensibles con clave derivada por tenant (KMS) | AES-256-GCM con nonce único por registro |
+| **Claves** | Rotación automática cada 90 días. Vault (HashiCorp) o AWS KMS | NIST SP 800-57 |
+
+**Campos con cifrado a nivel de aplicación**:
+- `health_profile.medical_conditions` — cifrado con clave derivada del `tenant_id`
+- `health_telemetry.raw_payload` — el blob JSON del wearable se cifra antes de persistir
+- `user_session.device_fingerprint` — hash + cifrado para prevenir correlación
+
+#### 10.3.4 Auditoría de Acceso a Datos Clínicos
+
+Todo acceso a datos de salud — lectura, escritura, exportación o intento fallido — genera un evento de auditoría inmutable. Estos eventos se almacenan en la tabla `audit_log` con políticas RLS que impiden su modificación incluso por administradores.
+
+| Evento Auditado | Datos Registrados | Retención |
+|-----------------|-------------------|-----------|
+| Acceso a telemetría de usuario | Timestamp, user_id, rol, IP, endpoint, correlation_id | 3 años |
+| Modificación de estado de validación (AgentInsight) | Antes/después, user_id, agente responsable | Indefinido (eventos inmutables) |
+| Exportación / descarga de datos | Timestamp, user_id, formato, cantidad de registros | 5 años |
+| Intento fallido de acceso (RBAC) | Timestamp, IP, rol intentado, recurso solicitado | 1 año (alerta al equipo si >5/min) |
+
+El `correlation_id` viaja en todas las capas (frontend → API Gateway → NestJS → Supabase) y permite reconstruir la traza completa de una solicitud en sistemas de observabilidad (OpenTelemetry + Grafana).
+
+#### 10.3.5 Derechos ARCO y del Titular de Datos
+
+Fitt implementa los derechos de Acceso, Rectificación, Cancelación y Oposición como endpoints de API auditables, no como procesos manuales. La arquitectura de event sourcing introduce una particularidad: la telemetría cruda es inmutable por diseño, pero el usuario conserva control total sobre su procesamiento y persistencia.
+
+| Derecho | Implementación | Plazo |
+|---------|---------------|-------|
+| **Acceso** | `GET /api/v1/users/:id/data-export` genera JSON/CSV con toda la telemetría + insights del usuario | ≤30 días |
+| **Rectificación** | `PUT /api/v1/users/:id` permite corregir peso, altura, goal. Telemetría cruda es inmutable (event sourcing) | ≤5 días hábiles |
+| **Cancelación / Supresión** | Soft delete (`is_deleted = true`). Borrado físico irreversible tras 90 días de período de gracia | ≤30 días |
+| **Oposición** | El usuario puede desactivar procesamiento de IA (modo «solo tracking»). No se generan insights nuevos pero sí alertas de seguridad | Inmediato |
+| **Portabilidad** | Exportación en formato estructurado (JSON) compatible con FHIR R4 / Open mHealth | ≤30 días |
+
+#### 10.3.6 Política de Retención y Purga de Datos
+
+La retención sigue un modelo de tres etapas: activa (datos accesibles en tiempo real), archivo frío (agregados para análisis histórico) y purga física (eliminación irreversible). Cada tipo de dato tiene su propio ciclo de vida.
+
+| Tipo de Dato | Retención Activa | Archivo Frío | Purga Física |
+|-------------|-----------------|-------------|-------------|
+| Telemetría cruda (HealthTelemetry) | 24 meses | 5 años (agregado mensual) | 6 años desde ingesta |
+| Estados de usuario (UserState) | Indefinido (audit trail) | — | Bajo solicitud ARCO |
+| Insights (AgentInsight) | Indefinido (mejora del modelo) | — | Bajo solicitud ARCO |
+| Memoria de corto plazo (Redis) | 24 horas | — | TTL automático |
+| Logs de auditoría | 3 años | 7 años | 7 años desde creación |
+
+**Mecanismo de purga**: Un cron job semanal (`data-retention-sweeper`) evalúa las marcas temporales de cada registro contra la política vigente. La purga es irreversible y se registra como evento de auditoría con `action = 'data_purge'`.
+
+#### 10.3.7 Evaluación de Impacto en Protección de Datos (DPIA / EIPD)
+
+Antes del lanzamiento de cada fase del roadmap, se debe completar una DPIA que evalúe los riesgos específicos introducidos por las nuevas funcionalidades. No es un documento estático — es un proceso iterativo que acompaña la evolución del producto.
+
+**Checklist obligatorio pre-lanzamiento**:
+
+- [ ] Identificar flujos de datos PHI entrantes (wearables, ingesta manual, APIs de terceros)
+- [ ] Mapear procesadores de datos (Supabase, NVIDIA NIM, Redis) y sus DPAs vigentes
+- [ ] Evaluar necesidad vs. proporcionalidad de cada categoría de dato recolectado
+- [ ] Identificar riesgos residuales (re-identificación por correlación de métricas, inferencia de condiciones médicas no declaradas)
+- [ ] Definir medidas de mitigación por riesgo identificado
+- [ ] Aprobar con DPO / asesor legal antes del despliegue a producción
+
+**Riesgos residuales identificados en el diseño actual**:
+
+| Riesgo | Probabilidad | Impacto | Mitigación |
+|--------|-------------|---------|------------|
+| Re-identificación por correlación de métricas (FC + pasos + sueño → perfil único) | Media | Alto | Agregación temporal mínima de 24h antes de exponer a APIs de analytics. K-anonymity (k ≥ 5) en dashboards agregados |
+| Inferencia de condiciones médicas no declaradas por el LLM | Media | Alto | El Health Data Agent filtra outputs que mencionen diagnósticos no declarados. Auditoría humana de muestras aleatorias |
+| Fuga de datos por prompt injection en entrada de usuario | Baja | Crítico | Sanitización estricta de entrada de usuario (Zod + allowlist de caracteres). Rate limiting agresivo en endpoints de ingesta |
+
+#### 10.3.8 Notificación de Brechas de Seguridad
+
+La capacidad de detectar, contener y notificar una brecha define la diferencia entre un incidente gestionable y una crisis regulatoria. Los plazos de notificación no son aspiracionales — son obligaciones legales con consecuencias financieras y penales.
+
+| Escenario | Plazo de Notificación | Canal |
+|-----------|----------------------|-------|
+| Acceso no autorizado a datos PHI | ≤72 horas desde detección | Email + notificación in-app a usuarios afectados + AAIP (Argentina) / autoridad local |
+| Exfiltración de credenciales JWT | ≤24 horas | Invalidación global de sesiones + email a todos los usuarios + rotación de secrets |
+| Incidente en proveedor (Supabase, NIM) | Según plazo del proveedor | Comunicado en status page + email a usuarios |
+
+**Procedimiento de respuesta**:
+
+1. **Detección** (automática): Alertas de Grafana por anomalías en `audit_log` (≥5 fallos de acceso/min, exportaciones masivas, accesos desde IPs no reconocidas)
+2. **Contención** (≤1 hora): Rotación automática de secrets, bloqueo de IPs ofensoras, invalidación de sesiones comprometidas
+3. **Notificación** (según tabla): Comunicación a usuarios y autoridades con descripción del incidente, datos afectados, medidas tomadas y pasos recomendados
+4. **Post-mortem** (≤5 días): Documento interno con línea de tiempo, causa raíz, medidas correctivas y prevención de recurrencia
 
 ---
 

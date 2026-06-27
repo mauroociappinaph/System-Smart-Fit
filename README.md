@@ -8,7 +8,7 @@ Sistema para ingesta de telemetría biométrica, gestión de estados de usuario 
 
 ## Estado Actual
 
-El proyecto está en **desarrollo activo**. El backend es funcional con una arquitectura hexagonal sólida, tests unitarios y de integración, y persistencia real con **Supabase (PostgreSQL)**. El frontend está scaffolded pero aún sin implementar.
+El proyecto está en **desarrollo activo**. Backend funcional con arquitectura hexagonal sólida, persistencia en **Supabase (PostgreSQL)**, y frontend **Next.js en producción** con autenticación, dashboard, insights y filtros por mes/rango de fechas.
 
 ---
 
@@ -20,8 +20,8 @@ El proyecto está en **desarrollo activo**. El backend es funcional con una arqu
 | **User** | ✅ Completo | CRUD de usuarios perfil atlético |
 | **UserState** | ✅ Completo | Máquina de estados (FSM) con persistencia y transiciones |
 | **AgentInsight** | ✅ Completo | Insights generados con flujo de validación (approve/reject/discard) |
-| **Auth** | ❌ Pendiente | Sin autenticación implementada |
-| **Frontend** | ❌ Scaffold vacío | Next.js instalado sin lógica de negocio |
+| **Auth** | ✅ Completo | Login con email/contraseña + JWT + refresh token + guards |
+| **Frontend** | ✅ Funcional | Next.js 15 con login, dashboard, insights con filtros (mes / rango fechas) + refresh |
 
 ---
 
@@ -30,9 +30,10 @@ El proyecto está en **desarrollo activo**. El backend es funcional con una arqu
 | Capa | Tecnología |
 |------|-----------|
 | **Backend** | NestJS 11 + TypeScript |
+| **Frontend** | Next.js 15 + React 19 + Zustand + Tailwind CSS |
 | **Base de datos** | Supabase (PostgreSQL 16 + pgvector) + Prisma ORM 7 |
 | **Validación** | class-validator + class-transformer |
-| **Testing** | Jest 30 + Supertest |
+| **Testing** | Jest 30 + Supertest (backend) + Vitest (frontend) |
 
 ---
 
@@ -115,7 +116,7 @@ Fitt/
 │   ├── prisma/
 │   │   └── schema.prisma      # Schema de base de datos
 │   └── test/                  # Tests E2E
-├── frontend/                  # Next.js (scaffold)
+├── frontend/                  # Next.js 15 (login, dashboard, insights)
 ├── planCompleto.md            # Visión arquitectónica completa
 └── ROADMAP.md                 # Plan de desarrollo
 ```
@@ -124,17 +125,23 @@ Fitt/
 
 ## Tests
 
-**61 tests pasando**, 15 suites, 0 fallos.
+**105 tests pasando** (93 backend + 12 frontend), 22 suites, 0 fallos.
 
 ```bash
+# Backend
 cd backend && npm run test
+
+# Frontend
+cd frontend && npm run test
 ```
 
-| Tipo | Framework | Cobertura |
+| Capa | Framework | Cobertura |
 |------|-----------|-----------|
-| Unitarios (entidades + use cases) | Jest | ✓ |
-| Integración (repositorios) | Jest | ✓ |
-| Controladores (REST) | Supertest | ✓ |
+| Backend — Unitarios (entidades + use cases) | Jest | ✓ |
+| Backend — Integración (repositorios) | Jest | ✓ |
+| Backend — Controladores (REST) | Supertest | ✓ |
+| Frontend — Stores (Zustand) | Vitest | ✓ |
+| Frontend — Componentes | Vitest + React Testing Library | ✓ |
 
 ---
 
