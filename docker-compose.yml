@@ -1,0 +1,27 @@
+services:
+  backend:
+    build: ./backend
+    container_name: smartfit-backend
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+      DATABASE_URL: "postgresql://postgres.bvojmrveoppjoyucdfpd:baqty6-byzGef-dysmis@aws-1-us-east-1.pooler.supabase.com:6543/postgres?schema=public"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    command: npm run start:dev
+
+  frontend:
+    build: ./frontend
+    container_name: smartfit-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3001/api
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    command: npm run dev
