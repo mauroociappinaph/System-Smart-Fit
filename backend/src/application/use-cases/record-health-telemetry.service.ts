@@ -8,7 +8,8 @@ import { Injectable, Inject } from '@nestjs/common';
 @Injectable()
 export class RecordHealthTelemetryService implements RecordHealthTelemetryUseCase {
   constructor(
-    @Inject('HealthTelemetryRepository') private readonly telemetryRepository: HealthTelemetryRepository,
+    @Inject('HealthTelemetryRepository')
+    private readonly telemetryRepository: HealthTelemetryRepository,
   ) {}
 
   async execute(command: RecordHealthTelemetryCommand): Promise<void> {
@@ -34,6 +35,7 @@ export class RecordHealthTelemetryService implements RecordHealthTelemetryUseCas
     await this.telemetryRepository.save(entity);
 
     // 3. (Pending) Publish Domain Event via EventBus Port
+    void event; // Will be published via EventBus in Phase 4
     // await this.eventBus.publish(event);
   }
 }

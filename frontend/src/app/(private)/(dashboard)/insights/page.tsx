@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/stores/auth.store';
@@ -108,7 +107,6 @@ function InsightCard({
 }
 
 export default function InsightsPage() {
-  const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const {
     insights,
@@ -140,7 +138,6 @@ export default function InsightsPage() {
   useEffect(() => {
     if (user) {
       fetchInsights(user.id);
-      setPage(1);
     }
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 

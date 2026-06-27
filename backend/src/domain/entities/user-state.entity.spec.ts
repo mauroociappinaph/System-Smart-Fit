@@ -10,7 +10,13 @@ describe('UserState Entity', () => {
   function makeTransition(
     currentState: UserStateEnum,
     previousState: UserStateEnum | null,
-    overrides?: { id?: string; eventId?: string; userId?: string; transitionedAt?: number; correlationId?: string },
+    overrides?: {
+      id?: string;
+      eventId?: string;
+      userId?: string;
+      transitionedAt?: number;
+      correlationId?: string;
+    },
   ) {
     return UserState.transition(
       overrides?.id ?? baseId,
@@ -40,48 +46,75 @@ describe('UserState Entity', () => {
 
   describe('Valid transitions', () => {
     it('IDLE → ACTIVE_TRACKING', () => {
-      const { entity } = makeTransition(UserStateEnum.ACTIVE_TRACKING, UserStateEnum.IDLE);
+      const { entity } = makeTransition(
+        UserStateEnum.ACTIVE_TRACKING,
+        UserStateEnum.IDLE,
+      );
       expect(entity.currentState).toBe(UserStateEnum.ACTIVE_TRACKING);
       expect(entity.previousState).toBe(UserStateEnum.IDLE);
     });
 
     it('ACTIVE_TRACKING → IMPROVEMENT', () => {
-      const { entity } = makeTransition(UserStateEnum.IMPROVEMENT, UserStateEnum.ACTIVE_TRACKING);
+      const { entity } = makeTransition(
+        UserStateEnum.IMPROVEMENT,
+        UserStateEnum.ACTIVE_TRACKING,
+      );
       expect(entity.currentState).toBe(UserStateEnum.IMPROVEMENT);
     });
 
     it('ACTIVE_TRACKING → STAGNATION', () => {
-      const { entity } = makeTransition(UserStateEnum.STAGNATION, UserStateEnum.ACTIVE_TRACKING);
+      const { entity } = makeTransition(
+        UserStateEnum.STAGNATION,
+        UserStateEnum.ACTIVE_TRACKING,
+      );
       expect(entity.currentState).toBe(UserStateEnum.STAGNATION);
     });
 
     it('ACTIVE_TRACKING → RISK', () => {
-      const { entity } = makeTransition(UserStateEnum.RISK, UserStateEnum.ACTIVE_TRACKING);
+      const { entity } = makeTransition(
+        UserStateEnum.RISK,
+        UserStateEnum.ACTIVE_TRACKING,
+      );
       expect(entity.currentState).toBe(UserStateEnum.RISK);
     });
 
     it('IMPROVEMENT → RECOVERY', () => {
-      const { entity } = makeTransition(UserStateEnum.RECOVERY, UserStateEnum.IMPROVEMENT);
+      const { entity } = makeTransition(
+        UserStateEnum.RECOVERY,
+        UserStateEnum.IMPROVEMENT,
+      );
       expect(entity.currentState).toBe(UserStateEnum.RECOVERY);
     });
 
     it('STAGNATION → IMPROVEMENT', () => {
-      const { entity } = makeTransition(UserStateEnum.IMPROVEMENT, UserStateEnum.STAGNATION);
+      const { entity } = makeTransition(
+        UserStateEnum.IMPROVEMENT,
+        UserStateEnum.STAGNATION,
+      );
       expect(entity.currentState).toBe(UserStateEnum.IMPROVEMENT);
     });
 
     it('STAGNATION → RECOVERY', () => {
-      const { entity } = makeTransition(UserStateEnum.RECOVERY, UserStateEnum.STAGNATION);
+      const { entity } = makeTransition(
+        UserStateEnum.RECOVERY,
+        UserStateEnum.STAGNATION,
+      );
       expect(entity.currentState).toBe(UserStateEnum.RECOVERY);
     });
 
     it('RISK → RECOVERY', () => {
-      const { entity } = makeTransition(UserStateEnum.RECOVERY, UserStateEnum.RISK);
+      const { entity } = makeTransition(
+        UserStateEnum.RECOVERY,
+        UserStateEnum.RISK,
+      );
       expect(entity.currentState).toBe(UserStateEnum.RECOVERY);
     });
 
     it('RECOVERY → ACTIVE_TRACKING', () => {
-      const { entity } = makeTransition(UserStateEnum.ACTIVE_TRACKING, UserStateEnum.RECOVERY);
+      const { entity } = makeTransition(
+        UserStateEnum.ACTIVE_TRACKING,
+        UserStateEnum.RECOVERY,
+      );
       expect(entity.currentState).toBe(UserStateEnum.ACTIVE_TRACKING);
     });
   });
@@ -95,7 +128,10 @@ describe('UserState Entity', () => {
 
     it('should reject IMPROVEMENT → ACTIVE_TRACKING', () => {
       expect(() =>
-        makeTransition(UserStateEnum.ACTIVE_TRACKING, UserStateEnum.IMPROVEMENT),
+        makeTransition(
+          UserStateEnum.ACTIVE_TRACKING,
+          UserStateEnum.IMPROVEMENT,
+        ),
       ).toThrow('invalid transition');
     });
 
@@ -114,14 +150,20 @@ describe('UserState Entity', () => {
 
   describe('canTransitionTo', () => {
     it('should return true for valid next states', () => {
-      const { entity } = makeTransition(UserStateEnum.ACTIVE_TRACKING, UserStateEnum.IDLE);
+      const { entity } = makeTransition(
+        UserStateEnum.ACTIVE_TRACKING,
+        UserStateEnum.IDLE,
+      );
       expect(entity.canTransitionTo(UserStateEnum.IMPROVEMENT)).toBe(true);
       expect(entity.canTransitionTo(UserStateEnum.STAGNATION)).toBe(true);
       expect(entity.canTransitionTo(UserStateEnum.RISK)).toBe(true);
     });
 
     it('should return false for invalid next states', () => {
-      const { entity } = makeTransition(UserStateEnum.ACTIVE_TRACKING, UserStateEnum.IDLE);
+      const { entity } = makeTransition(
+        UserStateEnum.ACTIVE_TRACKING,
+        UserStateEnum.IDLE,
+      );
       expect(entity.canTransitionTo(UserStateEnum.IDLE)).toBe(false);
       expect(entity.canTransitionTo(UserStateEnum.RECOVERY)).toBe(false);
     });
@@ -129,7 +171,10 @@ describe('UserState Entity', () => {
 
   describe('getValidNextStates', () => {
     it('should return correct valid next states for ACTIVE_TRACKING', () => {
-      const { entity } = makeTransition(UserStateEnum.ACTIVE_TRACKING, UserStateEnum.IDLE);
+      const { entity } = makeTransition(
+        UserStateEnum.ACTIVE_TRACKING,
+        UserStateEnum.IDLE,
+      );
       const valid = entity.getValidNextStates();
       expect(valid).toContain(UserStateEnum.IMPROVEMENT);
       expect(valid).toContain(UserStateEnum.STAGNATION);
@@ -138,7 +183,10 @@ describe('UserState Entity', () => {
     });
 
     it('should return [ACTIVE_TRACKING] for RECOVERY (only transition)', () => {
-      const { entity } = makeTransition(UserStateEnum.RECOVERY, UserStateEnum.RISK);
+      const { entity } = makeTransition(
+        UserStateEnum.RECOVERY,
+        UserStateEnum.RISK,
+      );
       const valid = entity.getValidNextStates();
       expect(valid).toEqual([UserStateEnum.ACTIVE_TRACKING]);
     });
@@ -146,7 +194,7 @@ describe('UserState Entity', () => {
 
   describe('Domain Event', () => {
     it('should emit UserStateTransitioned event with correct payload', () => {
-      const { entity, event } = makeTransition(
+      const { entity: _entity, event } = makeTransition(
         UserStateEnum.ACTIVE_TRACKING,
         UserStateEnum.IDLE,
       );

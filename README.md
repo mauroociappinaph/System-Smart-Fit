@@ -197,4 +197,4 @@ Desarrollado por el equipo Smart Fit con arquitectura hexagonal, event-driven y 
 
 ## 📄 Licencia
 
-Uso interno Smart Fit.
+Uso interno Smart Fit.# Test CI
