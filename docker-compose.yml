@@ -4,24 +4,36 @@ services:
     container_name: smartfit-backend
     ports:
       - "3001:3001"
+    env_file:
+      - .env
     environment:
-      PORT: 3001
-      DATABASE_URL: "postgresql://postgres.bvojmrveoppjoyucdfpd:baqty6-byzGef-dysmis@aws-1-us-east-1.pooler.supabase.com:6543/postgres?schema=public"
+      - PORT=${PORT}
+      - DATABASE_URL=${DATABASE_URL}
     volumes:
       - ./backend:/app
       - /app/node_modules
     command: npm run start:dev
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   frontend:
     build: ./frontend
     container_name: smartfit-frontend
     ports:
       - "3000:3000"
+    env_file:
+      - .env
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:3001/api
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - NEXT_TELEMETRY_DISABLED=1
     volumes:
       - ./frontend:/app
       - /app/node_modules
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     command: npm run dev
