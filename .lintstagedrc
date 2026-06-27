@@ -1,0 +1,14 @@
+{
+  "*.{ts,tsx,js,jsx,json,md,css,scss}": [
+    "prettier --write"
+  ],
+  "*.{ts,tsx,js,jsx}": [
+    "eslint --fix"
+  ],
+  "backend/**/*.ts": [
+    "cd backend && npm run lint"
+  ],
+  "frontend/**/*.{ts,tsx}": [
+    "cd frontend && npm run lint"
+  ]
+}
