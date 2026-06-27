@@ -20,7 +20,6 @@ export default function RegisterPage() {
   const router = useRouter();
   const signup = useAuthStore((s) => s.signup);
   const isLoading = useAuthStore((s) => s.isLoading);
-  const error = useAuthStore((s) => s.error);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

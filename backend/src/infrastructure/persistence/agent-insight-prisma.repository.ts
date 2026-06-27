@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   AgentInsightRepository,
@@ -65,9 +65,9 @@ export class AgentInsightPrismaRepository implements AgentInsightRepository {
     });
   }
 
-  private buildDateWhere(
-    dateFilter?: DateFilter,
-  ): { createdAt?: { gte?: number; lte?: number } } {
+  private buildDateWhere(dateFilter?: DateFilter): {
+    createdAt?: { gte?: number; lte?: number };
+  } {
     if (!dateFilter) return {};
     const where: { createdAt?: { gte?: number; lte?: number } } = {};
     if (dateFilter.startDate !== undefined) {
