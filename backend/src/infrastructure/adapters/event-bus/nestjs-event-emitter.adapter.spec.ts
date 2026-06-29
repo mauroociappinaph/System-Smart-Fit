@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NESTJS_EVENT_EMITTER_ADAPTER_PROVIDER } from './nestjs-event-emitter.adapter';
@@ -23,6 +24,8 @@ describe('EventBusPort Contract', () => {
   let module: TestingModule;
 
   beforeEach(async () => {
+    jest.spyOn(Logger.prototype, 'debug').mockImplementation(() => {});
+
     const mockEventEmitter = {
       emitAsync: jest.fn().mockResolvedValue(undefined),
     };
@@ -54,21 +57,22 @@ describe('EventBusPort Contract', () => {
       expect(eventEmitter.emitAsync).toHaveBeenCalledWith('test.event', event);
     });
 
-    it('should not throw when emitter fails', async () => {
+    it('should reject when emitter fails', async () => {
       const event = new TestEvent('evt-2', 'corr-2', Date.now(), { test: 'data' });
       eventEmitter.emitAsync.mockRejectedValueOnce(new Error('Emitter error'));
 
-      await expect(adapter.publish(event)).resolves.toBeUndefined();
+      await expect(adapter.publish(event)).rejects.toThrow('Emitter error');
     });
 
-    it('should log error when emitter fails', async () => {
+    it('should log debug on successful publish', async () => {
       const event = new TestEvent('evt-3', 'corr-3', Date.now(), { test: 'data' });
-      eventEmitter.emitAsync.mockRejectedValueOnce(new Error('Emitter error'));
 
       await adapter.publish(event);
 
-      // Error is logged internally - we verify no throw
-      expect(eventEmitter.emitAsync).toHaveBeenCalled();
+      expect(Logger.prototype.debug).toHaveBeenCalledWith(
+        expect.stringContaining('Event published: test.event'),
+        expect.objectContaining({ eventId: 'evt-3', correlationId: 'corr-3' }),
+      );
     });
   });
 
@@ -95,15 +99,10 @@ describe('EventBusPort Contract', () => {
       ];
       eventEmitter.emitAsync.mockResolvedValue(undefined);
 
-      const start = Date.now();
-      await adapter.publishAll(events);
-      const duration = Date.now() - start;
-
-      // Should be parallel (much faster than sequential)
-      expect(duration).toBeLessThan(100);
+      await expect(adapter.publishAll(events)).resolves.toBeUndefined();
     });
 
-    it('should not throw if any emission fails', async () => {
+    it('should reject if any emission fails', async () => {
       const events = [
         new TestEvent('evt-1', 'corr-1', Date.now(), { test: '1' }),
         new TestEvent('evt-2', 'corr-2', Date.now(), { test: '2' }),
@@ -112,7 +111,7 @@ describe('EventBusPort Contract', () => {
         .mockResolvedValueOnce(undefined)
         .mockRejectedValueOnce(new Error('Partial failure'));
 
-      await expect(adapter.publishAll(events)).resolves.toBeUndefined();
+      await expect(adapter.publishAll(events)).rejects.toThrow('Partial failure');
     });
   });
 });

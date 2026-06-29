@@ -10,26 +10,30 @@ export class NestjsEventEmitterAdapter implements EventBusPort {
   constructor(private readonly eventEmitter: EventEmitter2) {}
 
   async publish(event: DomainEvent<unknown>): Promise<void> {
-    try {
-      await this.eventEmitter.emitAsync(event.eventName, event);
-      this.logger.debug(`Event published: ${event.eventName}`, {
-        eventId: event.eventId,
-        correlationId: event.correlationId,
-      });
-    } catch (error) {
-      this.logger.error(`Failed to publish event: ${event.eventName}`, {
-        eventId: event.eventId,
-        correlationId: event.correlationId,
-        error: error instanceof Error ? error.message : String(error),
-      });
-      // Fire-and-forget: don't throw to preserve transaction integrity
-    }
+    await this.eventEmitter.emitAsync(event.eventName, event);
+    this.logger.debug(`Event published: ${event.eventName}`, {
+      eventId: event.eventId,
+      correlationId: event.correlationId,
+    });
   }
 
   async publishAll(events: DomainEvent<unknown>[]): Promise<void> {
-    await Promise.all(
+    const settled = await Promise.allSettled(
       events.map((event) => this.publish(event)),
     );
+
+    const failures = settled.filter(
+      (r): r is PromiseRejectedResult => r.status === 'rejected',
+    );
+
+    if (failures.length > 0) {
+      const errors = failures.map((r) => r.reason);
+      this.logger.error(
+        `Failed to publish ${failures.length}/${events.length} events`,
+        errors,
+      );
+      throw errors[0];
+    }
   }
 }
 

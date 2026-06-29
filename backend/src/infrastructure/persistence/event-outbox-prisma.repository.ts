@@ -19,7 +19,7 @@ export class PrismaOutboxRepository implements OutboxRepositoryPort {
       data: {
         id: event.eventId,
         eventName: event.eventName,
-        payload: JSON.stringify(event),
+        payload: event.payload !== undefined ? JSON.stringify(event.payload) : 'null',
         status: 'PENDING',
         createdAt: now,
       },
@@ -40,12 +40,12 @@ export class PrismaOutboxRepository implements OutboxRepositoryPort {
       take: limit,
     });
 
-    return records.map(this.toDomain);
+    return records.map((r) => this.toDomain(r));
   }
 
   async markPublished(id: string): Promise<void> {
     await this.prisma.eventOutbox.update({
-      where: { id },
+      where: { id, status: 'PENDING' },
       data: {
         status: 'PUBLISHED',
         publishedAt: Date.now(),
@@ -55,17 +55,18 @@ export class PrismaOutboxRepository implements OutboxRepositoryPort {
 
   async markFailed(id: string, error: string): Promise<void> {
     await this.prisma.eventOutbox.update({
-      where: { id },
+      where: { id, status: 'PENDING' },
       data: {
         status: 'FAILED',
         error,
+        retryCount: { increment: 1 },
       },
     });
   }
 
   async incrementRetry(id: string): Promise<void> {
     await this.prisma.eventOutbox.update({
-      where: { id },
+      where: { id, status: 'PENDING' },
       data: {
         retryCount: { increment: 1 },
       },
@@ -85,11 +86,18 @@ export class PrismaOutboxRepository implements OutboxRepositoryPort {
     return result.count;
   }
 
+  private safeBigIntToNumber(value: bigint): number {
+    if (value > BigInt(Number.MAX_SAFE_INTEGER) || value < BigInt(Number.MIN_SAFE_INTEGER)) {
+      throw new Error(`BigInt value ${value} exceeds safe integer range`);
+    }
+    return Number(value);
+  }
+
   private toDomain(record: {
     id: string;
     eventName: string;
     payload: string;
-    status: string;
+    status: OutboxEntry['status'];
     createdAt: bigint;
     publishedAt: bigint | null;
     error: string | null;
@@ -99,9 +107,9 @@ export class PrismaOutboxRepository implements OutboxRepositoryPort {
       id: record.id,
       eventName: record.eventName,
       payload: record.payload,
-      status: record.status as OutboxEntry['status'],
-      createdAt: Number(record.createdAt),
-      publishedAt: record.publishedAt !== null ? Number(record.publishedAt) : null,
+      status: record.status,
+      createdAt: this.safeBigIntToNumber(record.createdAt),
+      publishedAt: record.publishedAt !== null ? this.safeBigIntToNumber(record.publishedAt) : null,
       error: record.error,
       retryCount: record.retryCount,
     };

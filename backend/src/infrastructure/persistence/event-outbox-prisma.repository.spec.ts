@@ -62,16 +62,10 @@ describe('PrismaOutboxRepository', () => {
         data: {
           id: 'evt-1',
           eventName: 'user.registered',
-          payload: expect.any(String),
+          payload: JSON.stringify({ value: 'data' }),
           status: 'PENDING',
           createdAt: expect.any(Number),
         },
-      });
-
-      const call = prisma.eventOutbox.create.mock.calls[0][0];
-      expect(JSON.parse(call.data.payload)).toMatchObject({
-        eventId: 'evt-1',
-        eventName: 'user.registered',
       });
     });
 
@@ -127,7 +121,7 @@ describe('PrismaOutboxRepository', () => {
       await repository.markPublished('evt-1');
 
       expect(prisma.eventOutbox.update).toHaveBeenCalledWith({
-        where: { id: 'evt-1' },
+        where: { id: 'evt-1', status: 'PENDING' },
         data: {
           status: 'PUBLISHED',
           publishedAt: expect.any(Number),
@@ -137,14 +131,15 @@ describe('PrismaOutboxRepository', () => {
   });
 
   describe('markFailed', () => {
-    it('should update status to FAILED with error', async () => {
+    it('should update status to FAILED with error and increment retry', async () => {
       await repository.markFailed('evt-1', 'Delivery failed');
 
       expect(prisma.eventOutbox.update).toHaveBeenCalledWith({
-        where: { id: 'evt-1' },
+        where: { id: 'evt-1', status: 'PENDING' },
         data: {
           status: 'FAILED',
           error: 'Delivery failed',
+          retryCount: { increment: 1 },
         },
       });
     });
@@ -155,7 +150,7 @@ describe('PrismaOutboxRepository', () => {
       await repository.incrementRetry('evt-1');
 
       expect(prisma.eventOutbox.update).toHaveBeenCalledWith({
-        where: { id: 'evt-1' },
+        where: { id: 'evt-1', status: 'PENDING' },
         data: {
           retryCount: { increment: 1 },
         },
