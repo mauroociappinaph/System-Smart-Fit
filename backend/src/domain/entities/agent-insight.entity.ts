@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
 import { InsightGenerated } from '../events/insight-generated.event';
+import { InsightNotPendingError } from '../../shared/domain/error/insight-not-pending.error';
 
 export enum ValidationStatus {
   PENDING = 'pending',
@@ -7,8 +8,6 @@ export enum ValidationStatus {
   REJECTED = 'rejected',
   DISCARDED = 'discarded',
 }
-
-export const NOT_PENDING_ERROR = 'AgentInsight: insight is not in PENDING status';
 
 export class AgentInsight {
   private constructor(
@@ -98,27 +97,27 @@ export class AgentInsight {
    * Reconstitute an AgentInsight from persisted data (bypasses factory logic).
    * Intended for repository adapters only.
    */
-  public static reconstitute(
-    id: string,
-    userId: string,
-    correlationId: string,
-    category: string,
-    content: string,
-    score: number,
-    validationStatus: ValidationStatus,
-    createdAt: number,
-    updatedAt: number,
-  ): AgentInsight {
+  public static reconstitute(options: {
+    id: string;
+    userId: string;
+    correlationId: string;
+    category: string;
+    content: string;
+    score: number;
+    validationStatus: ValidationStatus;
+    createdAt: number;
+    updatedAt: number;
+  }): AgentInsight {
     return new AgentInsight(
-      id,
-      userId,
-      correlationId,
-      category,
-      content,
-      score,
-      validationStatus,
-      createdAt,
-      updatedAt,
+      options.id,
+      options.userId,
+      options.correlationId,
+      options.category,
+      options.content,
+      options.score,
+      options.validationStatus,
+      options.createdAt,
+      options.updatedAt,
     );
   }
 
@@ -127,7 +126,7 @@ export class AgentInsight {
    */
   public approve(): void {
     if (this._validationStatus !== ValidationStatus.PENDING) {
-      throw new Error(NOT_PENDING_ERROR);
+      throw new InsightNotPendingError();
     }
     this._validationStatus = ValidationStatus.APPROVED;
     this._updatedAt = Date.now();
@@ -138,7 +137,7 @@ export class AgentInsight {
    */
   public reject(): void {
     if (this._validationStatus !== ValidationStatus.PENDING) {
-      throw new Error(NOT_PENDING_ERROR);
+      throw new InsightNotPendingError();
     }
     this._validationStatus = ValidationStatus.REJECTED;
     this._updatedAt = Date.now();
@@ -149,7 +148,7 @@ export class AgentInsight {
    */
   public discard(): void {
     if (this._validationStatus !== ValidationStatus.PENDING) {
-      throw new Error(NOT_PENDING_ERROR);
+      throw new InsightNotPendingError();
     }
     this._validationStatus = ValidationStatus.DISCARDED;
     this._updatedAt = Date.now();

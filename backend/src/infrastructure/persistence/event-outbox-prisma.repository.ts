@@ -1,10 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { DomainEvent } from '@/shared/domain/domain-event.interface';
+import type { Prisma } from '@prisma/client';
+import { DomainEvent } from '../../shared/domain/domain-event.interface';
 import {
   OutboxRepositoryPort,
   OutboxEntry,
-} from '@/application/ports/out/event-outbox.repository';
-import { PrismaService } from '@/infrastructure/prisma/prisma.service';
+} from '../../application/ports/out/event-outbox.repository';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class PrismaOutboxRepository implements OutboxRepositoryPort {
@@ -12,15 +13,17 @@ export class PrismaOutboxRepository implements OutboxRepositoryPort {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async save(event: DomainEvent<unknown>): Promise<void> {
+  async save(event: DomainEvent<unknown>, tx?: Prisma.TransactionClient): Promise<void> {
     const now = Date.now();
+    const client = tx ?? this.prisma;
 
-    await this.prisma.eventOutbox.create({
+    await client.eventOutbox.create({
       data: {
         id: event.eventId,
         eventName: event.eventName,
         payload: event.payload !== undefined ? JSON.stringify(event.payload) : 'null',
         status: 'PENDING',
+        correlationId: event.correlationId,
         createdAt: now,
       },
     });
@@ -97,17 +100,20 @@ export class PrismaOutboxRepository implements OutboxRepositoryPort {
     id: string;
     eventName: string;
     payload: string;
-    status: OutboxEntry['status'];
+    status: string;
+    correlationId: string;
     createdAt: bigint;
     publishedAt: bigint | null;
     error: string | null;
     retryCount: number;
   }): OutboxEntry {
+    const status = record.status as OutboxEntry['status'];
     return {
       id: record.id,
       eventName: record.eventName,
       payload: record.payload,
-      status: record.status,
+      status,
+      correlationId: record.correlationId,
       createdAt: this.safeBigIntToNumber(record.createdAt),
       publishedAt: record.publishedAt !== null ? this.safeBigIntToNumber(record.publishedAt) : null,
       error: record.error,

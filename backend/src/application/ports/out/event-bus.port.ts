@@ -1,4 +1,4 @@
-import { DomainEvent } from '@/shared/domain/domain-event.interface';
+import { DomainEvent } from '../../../shared/domain/domain-event.interface';
 
 export interface EventBusPort {
   publish(event: DomainEvent<unknown>): Promise<void>;

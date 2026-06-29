@@ -1,21 +1,24 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   AgentInsightRepository,
   FindByUserIdOptions,
   DateFilter,
-} from '../../../application/ports/out/agent-insight.repository';
+} from '../../application/ports/out/agent-insight.repository';
 import {
   AgentInsight,
   ValidationStatus,
-} from '../../../domain/entities/agent-insight.entity';
+} from '../../domain/entities/agent-insight.entity';
 
 @Injectable()
 export class AgentInsightPrismaRepository implements AgentInsightRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async save(insight: AgentInsight): Promise<void> {
-    await this.prisma.agentInsight.upsert({
+  async save(insight: AgentInsight, tx?: Prisma.TransactionClient): Promise<void> {
+    const client = tx ?? this.prisma;
+
+    await client.agentInsight.upsert({
       where: { id: insight.id },
       create: {
         id: insight.id,
@@ -90,16 +93,16 @@ export class AgentInsightPrismaRepository implements AgentInsightRepository {
     createdAt: bigint;
     updatedAt: bigint;
   }): AgentInsight {
-    return AgentInsight.reconstitute(
-      record.id,
-      record.userId,
-      record.correlationId,
-      record.category,
-      record.content,
-      record.score,
-      record.validationStatus as ValidationStatus,
-      Number(record.createdAt),
-      Number(record.updatedAt),
-    );
+    return AgentInsight.reconstitute({
+      id: record.id,
+      userId: record.userId,
+      correlationId: record.correlationId,
+      category: record.category,
+      content: record.content,
+      score: record.score,
+      validationStatus: record.validationStatus as ValidationStatus,
+      createdAt: Number(record.createdAt),
+      updatedAt: Number(record.updatedAt),
+    });
   }
 }

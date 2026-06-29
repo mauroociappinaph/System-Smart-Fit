@@ -67,14 +67,15 @@ model User {
 }
 
 model EventOutbox {
-  id          String   @id
-  eventName   String
-  payload     String   // JSON serialized
-  status      String   @default("PENDING") // PENDING | PUBLISHED | FAILED
-  createdAt   BigInt
-  publishedAt BigInt?
-  error       String?
-  retryCount  Int      @default(0)
+  id             String   @id
+  eventName      String
+  payload        String   // JSON serialized
+  status         String   @default("PENDING") // PENDING | PUBLISHED | FAILED
+  correlationId  String
+  createdAt      BigInt
+  publishedAt    BigInt?
+  error          String?
+  retryCount     Int      @default(0)
 
   @@index([status, createdAt])
   @@index([createdAt])

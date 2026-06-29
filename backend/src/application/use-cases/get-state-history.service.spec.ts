@@ -18,10 +18,11 @@ describe('GetStateHistoryService', () => {
   });
 
   it('should return paginated history', async () => {
+    const transitionedAt = Date.now();
     const { entity } = UserState.transition(
       'id-1', 'evt-1', 'user-1',
-      UserStateEnum.IDLE, null,
-      Date.now(), 'corr-1',
+      UserStateEnum.IDLE, null, null,
+      transitionedAt, 'corr-1',
     );
 
     mockRepo.findHistoryByUserId.mockResolvedValue([entity]);

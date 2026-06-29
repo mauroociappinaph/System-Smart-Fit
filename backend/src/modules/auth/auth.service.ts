@@ -153,7 +153,7 @@ export class AuthService {
     };
   }
 
-  async me(userId: string): Promise<MeResponseDto> {
+  async me(userId: string, email: string): Promise<MeResponseDto> {
     const user = await this.userRepository.findById(userId);
 
     if (!user) {
@@ -162,7 +162,7 @@ export class AuthService {
 
     return {
       id: user.id,
-      email: '',
+      email,
       role: user.role,
       name: user.name,
       weightKg: user.weightKg,

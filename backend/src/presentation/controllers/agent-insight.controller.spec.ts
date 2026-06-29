@@ -6,7 +6,7 @@ import { GetUserInsightsService } from '../../application/use-cases/get-user-ins
 import { CreateInsightRequestDto } from '../dtos/create-insight.request.dto';
 import { ValidateInsightRequestDto } from '../dtos/validate-insight.request.dto';
 import { ListInsightsQueryDto } from '../dtos/list-insights.query.dto';
-import { AgentInsight } from '../../domain/entities/agent-insight.entity';
+import { AgentInsight, ValidationStatus } from '../../domain/entities/agent-insight.entity';
 
 describe('AgentInsightController', () => {
   let controller: AgentInsightController;
@@ -100,14 +100,21 @@ describe('AgentInsightController', () => {
 
   describe('GET /insights', () => {
     it('should return paginated insights for authenticated user', async () => {
-      const insight = AgentInsight.reconstitute(
-        'insight-1', 'user-1', 'corr-1', 'nutrition',
-        'High protein intake', 0.85, 'pending' as any, 1000, 1000,
-      );
+      const insight = AgentInsight.reconstitute({
+        id: 'insight-1',
+        userId: 'user-1',
+        correlationId: 'corr-1',
+        category: 'nutrition',
+        content: 'High protein intake',
+        score: 0.85,
+        validationStatus: 'pending' as ValidationStatus,
+        createdAt: 1000,
+        updatedAt: 1000,
+      });
 
       mockListService.execute.mockResolvedValue({ data: [insight], total: 1 });
 
-      const query: ListInsightsQueryDto = {};
+      const query = {} as ListInsightsQueryDto;
 
       const result = await controller.list(query, mockUser);
 
@@ -140,10 +147,7 @@ describe('AgentInsightController', () => {
     it('should pass limit and offset query params', async () => {
       mockListService.execute.mockResolvedValue({ data: [], total: 0 });
 
-      const query: ListInsightsQueryDto = {
-        limit: 10,
-        offset: 20,
-      };
+      const query = { limit: 10, offset: 20 } as ListInsightsQueryDto;
 
       await controller.list(query, mockUser);
 
@@ -162,9 +166,7 @@ describe('AgentInsightController', () => {
     it('should pass month filter to service', async () => {
       mockListService.execute.mockResolvedValue({ data: [], total: 0 });
 
-      const query: ListInsightsQueryDto = {
-        month: 3,
-      };
+      const query = { month: 3 } as ListInsightsQueryDto;
 
       await controller.list(query, mockUser);
 
@@ -181,10 +183,7 @@ describe('AgentInsightController', () => {
     it('should pass startDate/endDate filter to service', async () => {
       mockListService.execute.mockResolvedValue({ data: [], total: 0 });
 
-      const query: ListInsightsQueryDto = {
-        startDate: 1700000000000,
-        endDate: 1700100000000,
-      };
+      const query = { startDate: 1700000000000, endDate: 1700100000000 } as ListInsightsQueryDto;
 
       await controller.list(query, mockUser);
 

@@ -48,6 +48,10 @@ export class UserState {
   /**
    * Factory method — creates a new UserState transition and its domain event.
    * Enforces FSM transition rules.
+   *
+   * @param latestCurrentState - The currentState of the latest persisted record for this user,
+   *                             or null if this is the first transition. Used to enforce the
+   *                             invariant that previousState must match the latest recorded state.
    */
   public static transition(
     id: string,
@@ -55,9 +59,17 @@ export class UserState {
     userId: string,
     currentState: UserStateEnum,
     previousState: UserStateEnum | null,
+    latestCurrentState: UserStateEnum | null,
     transitionedAt: number,
     correlationId: string,
   ): { entity: UserState; event: UserStateTransitioned } {
+    // Invariant: previousState must match latest persisted record's currentState
+    if (previousState !== latestCurrentState) {
+      throw new Error(
+        `UserState: previousState "${previousState}" does not match latest record state "${latestCurrentState}"`,
+      );
+    }
+
     // Guard: validate transition rules
     if (previousState !== null) {
       const allowed = VALID_TRANSITIONS[previousState] ?? [];

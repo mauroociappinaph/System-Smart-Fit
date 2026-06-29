@@ -18,13 +18,15 @@ describe('UserState Entity', () => {
       correlationId?: string;
     },
   ) {
+    const transitionedAt = overrides?.transitionedAt ?? baseTransitionedAt;
     return UserState.transition(
       overrides?.id ?? baseId,
       overrides?.eventId ?? baseEventId,
       overrides?.userId ?? baseUserId,
       currentState,
       previousState,
-      overrides?.transitionedAt ?? baseTransitionedAt,
+      previousState, // latestCurrentState matches previousState for valid transitions
+      transitionedAt,
       overrides?.correlationId ?? baseCorrelationId,
     );
   }

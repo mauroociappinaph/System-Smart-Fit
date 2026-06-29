@@ -1,7 +1,8 @@
+import { Prisma } from '@prisma/client';
 import { UserState } from '../../../domain/entities/user-state.entity';
 
 export interface UserStateRepository {
-  save(state: UserState): Promise<void>;
+  save(state: UserState, tx?: Prisma.TransactionClient): Promise<void>;
 
   findById(id: string): Promise<UserState | null>;
 

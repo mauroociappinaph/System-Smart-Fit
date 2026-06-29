@@ -1,4 +1,5 @@
-import { DomainEvent } from '@/shared/domain/domain-event.interface';
+import { Prisma } from '@prisma/client';
+import { DomainEvent } from '../../../shared/domain/domain-event.interface';
 
 export interface OutboxEntry {
   id: string;
@@ -9,12 +10,13 @@ export interface OutboxEntry {
   publishedAt: number | null;
   error: string | null;
   retryCount: number;
+  correlationId: string;
 }
 
 export const OUTBOX_REPOSITORY_PORT = Symbol('OutboxRepositoryPort');
 
 export interface OutboxRepositoryPort {
-  save(event: DomainEvent<unknown>): Promise<void>;
+  save(event: DomainEvent<unknown>, tx?: Prisma.TransactionClient): Promise<void>;
   findPending(limit?: number, olderThanMs?: number): Promise<OutboxEntry[]>;
   markPublished(id: string): Promise<void>;
   markFailed(id: string, error: string): Promise<void>;

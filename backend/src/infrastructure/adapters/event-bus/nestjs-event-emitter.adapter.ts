@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { DomainEvent } from '@/shared/domain/domain-event.interface';
-import { EventBusPort, EVENT_BUS_PORT } from '@/application/ports/out/event-bus.port';
+import { DomainEvent } from '../../../shared/domain/domain-event.interface';
+import { EventBusPort, EVENT_BUS_PORT } from '../../../application/ports/out/event-bus.port';
 
 @Injectable()
 export class NestjsEventEmitterAdapter implements EventBusPort {
@@ -32,7 +32,10 @@ export class NestjsEventEmitterAdapter implements EventBusPort {
         `Failed to publish ${failures.length}/${events.length} events`,
         errors,
       );
-      throw errors[0];
+      throw new AggregateError(
+        errors,
+        `EventBus: ${failures.length}/${events.length} events failed to publish`,
+      );
     }
   }
 }

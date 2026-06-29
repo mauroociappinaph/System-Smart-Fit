@@ -257,17 +257,18 @@ describe('AuthService', () => {
 
       mockFindById.mockResolvedValue(mockUser);
 
-      const result = await service.me('user-1');
+      const result = await service.me('user-1', 'test@example.com');
 
       expect(result.id).toBe('user-1');
       expect(result.name).toBe('Test User');
+      expect(result.email).toBe('test@example.com');
       expect(result.role).toBe(UserRole.USER);
     });
 
     it('should throw UnauthorizedException when user is not found', async () => {
       mockFindById.mockResolvedValue(null);
 
-      await expect(service.me('nonexistent')).rejects.toThrow(
+      await expect(service.me('nonexistent', 'test@example.com')).rejects.toThrow(
         UnauthorizedException,
       );
     });

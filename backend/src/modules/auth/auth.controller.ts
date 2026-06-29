@@ -43,6 +43,6 @@ export class AuthController {
   async me(
     @CurrentUser() user: { sub: string; email: string; role: string },
   ): Promise<MeResponseDto> {
-    return this.authService.me(user.sub);
+    return this.authService.me(user.sub, user.email);
   }
 }

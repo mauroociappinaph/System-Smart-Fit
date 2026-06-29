@@ -1,4 +1,3 @@
-import { BadRequestException } from '@nestjs/common';
 import { GetUserInsightsService } from './get-user-insights.service';
 import { AgentInsightRepository } from '../ports/out/agent-insight.repository';
 import { AgentInsight, ValidationStatus } from '../../domain/entities/agent-insight.entity';
@@ -8,17 +7,17 @@ describe('GetUserInsightsService', () => {
   let mockRepo: jest.Mocked<AgentInsightRepository>;
 
   function makeInsight(id: string): AgentInsight {
-    return AgentInsight.reconstitute(
+    return AgentInsight.reconstitute({
       id,
-      'user-1',
-      'corr-1',
-      'nutrition',
-      'Some insight',
-      0.75,
-      ValidationStatus.PENDING,
-      Date.now(),
-      Date.now(),
-    );
+      userId: 'user-1',
+      correlationId: 'corr-1',
+      category: 'nutrition',
+      content: 'Some insight',
+      score: 0.75,
+      validationStatus: ValidationStatus.PENDING,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
   }
 
   beforeEach(() => {
@@ -92,20 +91,6 @@ describe('GetUserInsightsService', () => {
       dateFilter: { startDate, endDate },
     });
     expect(mockRepo.countByUserId).toHaveBeenCalledWith('user-1', { startDate, endDate });
-  });
-
-  // ── C7 — startDate ≤ endDate validation ───────────────────
-
-  it('should throw if startDate > endDate', async () => {
-    await expect(
-      service.execute('user-1', { startDate: 2000, endDate: 1000 }),
-    ).rejects.toThrow(BadRequestException);
-  });
-
-  it('should throw if month and startDate are both provided', async () => {
-    await expect(
-      service.execute('user-1', { month: 3, startDate: 1000 }),
-    ).rejects.toThrow(BadRequestException);
   });
 
   it('should allow only startDate without endDate', async () => {

@@ -66,7 +66,7 @@ describe('SupabaseAuthGuard', () => {
     const result = await guard.canActivate(context);
 
     expect(result).toBe(true);
-    expect(request.user).toEqual({
+    expect((request as any).user).toEqual({
       sub: 'supabase-user-1',
       email: 'test@example.com',
       role: 'ADMIN',
@@ -74,7 +74,7 @@ describe('SupabaseAuthGuard', () => {
   });
 
   it('should inject default USER role when app_metadata.role is missing', async () => {
-    const request = { headers: { authorization: 'Bearer valid-token' } };
+    const request: Record<string, any> = { headers: { authorization: 'Bearer valid-token' } };
     const context = {
       switchToHttp: () => ({
         getRequest: () => request,
@@ -97,7 +97,7 @@ describe('SupabaseAuthGuard', () => {
     const result = await guard.canActivate(context);
 
     expect(result).toBe(true);
-    expect(request.user).toEqual({
+    expect((request as any).user).toEqual({
       sub: 'supabase-user-2',
       email: 'user@example.com',
       role: 'USER',

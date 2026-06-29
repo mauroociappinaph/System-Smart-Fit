@@ -1,10 +1,13 @@
 import { CreateUserService } from './create-user.service';
 import { UserRepository } from '../ports/out/user.repository';
+import { OutboxRepositoryPort } from '../ports/out/event-outbox.repository';
 import { UserGoal, UserRole } from '../../domain/entities/user.entity';
 
 describe('CreateUserService', () => {
   let service: CreateUserService;
   let mockRepository: jest.Mocked<UserRepository>;
+  let mockOutbox: jest.Mocked<OutboxRepositoryPort>;
+  let mockPrisma: { $transaction: jest.Mock };
 
   const validCommand = {
     userId: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
@@ -21,8 +24,19 @@ describe('CreateUserService', () => {
       save: jest.fn().mockResolvedValue(undefined),
       findById: jest.fn(),
     };
+    mockOutbox = {
+      save: jest.fn().mockResolvedValue(undefined),
+      findPending: jest.fn().mockResolvedValue([]),
+      markPublished: jest.fn().mockResolvedValue(undefined),
+      markFailed: jest.fn().mockResolvedValue(undefined),
+      incrementRetry: jest.fn().mockResolvedValue(undefined),
+      deletePublished: jest.fn().mockResolvedValue(0),
+    };
+    mockPrisma = {
+      $transaction: jest.fn((cb: (tx: any) => Promise<void>) => cb({})),
+    };
 
-    service = new CreateUserService(mockRepository);
+    service = new CreateUserService(mockRepository, mockOutbox, mockPrisma as any);
   });
 
   it('should create a user and return the userId from command', async () => {
@@ -37,6 +51,7 @@ describe('CreateUserService', () => {
 
     expect(mockRepository.save).toHaveBeenCalledTimes(1);
     const savedUser = mockRepository.save.mock.calls[0][0];
+    expect(mockRepository.save).toHaveBeenCalledWith(expect.any(Object), expect.any(Object));
     expect(savedUser.name).toBe(validCommand.name);
     expect(savedUser.weightKg).toBe(validCommand.weightKg);
     expect(savedUser.goal).toBe(validCommand.goal);
