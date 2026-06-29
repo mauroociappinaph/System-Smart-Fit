@@ -66,3 +66,18 @@ model User {
   @@map("users")
 }
 
+model EventOutbox {
+  id          String   @id
+  eventName   String
+  payload     String   // JSON serialized
+  status      String   @default("PENDING") // PENDING | PUBLISHED | FAILED
+  createdAt   BigInt
+  publishedAt BigInt?
+  error       String?
+  retryCount  Int      @default(0)
+
+  @@index([status, createdAt])
+  @@index([createdAt])
+  @@map("event_outbox")
+}
+
