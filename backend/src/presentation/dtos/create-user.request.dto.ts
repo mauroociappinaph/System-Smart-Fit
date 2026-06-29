@@ -1,4 +1,11 @@
-import { IsString, IsNumber, IsNotEmpty, IsEnum, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsNotEmpty,
+  IsEnum,
+  Min,
+  Max,
+} from 'class-validator';
 import { UserGoal } from '../../domain/entities/user.entity';
 
 export class CreateUserRequestDto {

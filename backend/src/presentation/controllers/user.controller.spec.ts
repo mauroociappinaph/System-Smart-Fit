@@ -23,9 +23,7 @@ describe('UserController', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UserController],
-      providers: [
-        { provide: CreateUserService, useValue: mockService },
-      ],
+      providers: [{ provide: CreateUserService, useValue: mockService }],
     }).compile();
 
     controller = module.get<UserController>(UserController);
@@ -33,7 +31,7 @@ describe('UserController', () => {
 
   it('should call service.execute with mapped command and return userId', async () => {
     const mockRes = { setHeader: jest.fn() } as any;
-    const result = await controller.register(mockDto as any, mockRes);
+    const result = await controller.register(mockDto, mockRes);
 
     expect(mockService.execute).toHaveBeenCalledWith({
       userId: mockDto.userId,
@@ -49,7 +47,7 @@ describe('UserController', () => {
 
   it('should set Location header with the new user URI', async () => {
     const mockRes = { setHeader: jest.fn() } as any;
-    await controller.register(mockDto as any, mockRes);
+    await controller.register(mockDto, mockRes);
 
     expect(mockRes.setHeader).toHaveBeenCalledWith(
       'Location',

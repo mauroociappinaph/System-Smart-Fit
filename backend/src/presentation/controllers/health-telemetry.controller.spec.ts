@@ -22,7 +22,9 @@ describe('HealthTelemetryController', () => {
       ],
     }).compile();
 
-    controller = module.get<HealthTelemetryController>(HealthTelemetryController);
+    controller = module.get<HealthTelemetryController>(
+      HealthTelemetryController,
+    );
   });
 
   it('should be defined', () => {

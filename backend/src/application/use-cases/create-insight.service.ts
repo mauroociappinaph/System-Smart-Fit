@@ -18,9 +18,10 @@ export class CreateInsightService implements CreateInsightUseCase {
     private readonly prisma: PrismaService,
   ) {}
 
-  async execute(
-    command: CreateInsightCommand,
-  ): Promise<{ entityId: string; event: import('../../domain/events/insight-generated.event').InsightGenerated }> {
+  async execute(command: CreateInsightCommand): Promise<{
+    entityId: string;
+    event: import('../../domain/events/insight-generated.event').InsightGenerated;
+  }> {
     const correlationId = command.correlationId || randomUUID();
 
     // 1. Domain Logic: Create Entity and Event via Factory

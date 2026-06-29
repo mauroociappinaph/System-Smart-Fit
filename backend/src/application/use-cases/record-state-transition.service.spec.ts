@@ -28,7 +28,11 @@ describe('RecordStateTransitionService', () => {
     mockPrisma = {
       $transaction: jest.fn((cb: (tx: any) => Promise<void>) => cb({})),
     };
-    service = new RecordStateTransitionService(mockRepo, mockOutbox, mockPrisma as any);
+    service = new RecordStateTransitionService(
+      mockRepo,
+      mockOutbox,
+      mockPrisma as any,
+    );
   });
 
   it('should create IDLE state and save it', async () => {
@@ -43,11 +47,16 @@ describe('RecordStateTransitionService', () => {
     expect(result.entityId).toBeDefined();
     expect(result.event.eventName).toBe('user_state.transitioned');
     expect(result.event.payload.currentState).toBe(UserStateEnum.IDLE);
-    expect(mockRepo.save).toHaveBeenCalledWith(expect.any(Object), expect.any(Object));
+    expect(mockRepo.save).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.any(Object),
+    );
   });
 
   it('should create ACTIVE_TRACKING from IDLE and save it', async () => {
-    mockRepo.findCurrentByUserId.mockResolvedValue({ currentState: UserStateEnum.IDLE } as any);
+    mockRepo.findCurrentByUserId.mockResolvedValue({
+      currentState: UserStateEnum.IDLE,
+    } as any);
 
     const result = await service.execute({
       userId: 'user-1',
@@ -56,9 +65,14 @@ describe('RecordStateTransitionService', () => {
     });
 
     expect(result.entityId).toBeDefined();
-    expect(result.event.payload.currentState).toBe(UserStateEnum.ACTIVE_TRACKING);
+    expect(result.event.payload.currentState).toBe(
+      UserStateEnum.ACTIVE_TRACKING,
+    );
     expect(result.event.payload.previousState).toBe(UserStateEnum.IDLE);
-    expect(mockRepo.save).toHaveBeenCalledWith(expect.any(Object), expect.any(Object));
+    expect(mockRepo.save).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.any(Object),
+    );
   });
 
   it('should reject state transition without prior IDLE record', async () => {
@@ -70,13 +84,17 @@ describe('RecordStateTransitionService', () => {
         currentState: UserStateEnum.ACTIVE_TRACKING,
         previousState: UserStateEnum.IDLE,
       }),
-    ).rejects.toThrow('previousState "IDLE" does not match latest record state "null"');
+    ).rejects.toThrow(
+      'previousState "IDLE" does not match latest record state "null"',
+    );
 
     expect(mockRepo.save).not.toHaveBeenCalled();
   });
 
   it('should reject invalid transition', async () => {
-    mockRepo.findCurrentByUserId.mockResolvedValue({ currentState: UserStateEnum.ACTIVE_TRACKING } as any);
+    mockRepo.findCurrentByUserId.mockResolvedValue({
+      currentState: UserStateEnum.ACTIVE_TRACKING,
+    } as any);
 
     await expect(
       service.execute({
@@ -104,7 +122,9 @@ describe('RecordStateTransitionService', () => {
   });
 
   it('should use provided correlationId', async () => {
-    mockRepo.findCurrentByUserId.mockResolvedValue({ currentState: UserStateEnum.IDLE } as any);
+    mockRepo.findCurrentByUserId.mockResolvedValue({
+      currentState: UserStateEnum.IDLE,
+    } as any);
 
     const result = await service.execute({
       userId: 'user-1',

@@ -5,12 +5,13 @@ import { HealthTelemetryRepository } from '../../application/ports/out/health-te
 import { HealthTelemetry } from '../../domain/entities/health-telemetry.entity';
 
 @Injectable()
-export class HealthTelemetryPrismaRepository
-  implements HealthTelemetryRepository
-{
+export class HealthTelemetryPrismaRepository implements HealthTelemetryRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async save(telemetry: HealthTelemetry, tx?: Prisma.TransactionClient): Promise<void> {
+  async save(
+    telemetry: HealthTelemetry,
+    tx?: Prisma.TransactionClient,
+  ): Promise<void> {
     const client = tx ?? this.prisma;
 
     await client.healthTelemetry.create({

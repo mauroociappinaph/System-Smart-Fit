@@ -10,9 +10,7 @@ import {
  *  - startDate must be ≤ endDate
  */
 @ValidatorConstraint({ name: 'validateDateFilters', async: false })
-export class ValidateDateFiltersConstraint
-  implements ValidatorConstraintInterface
-{
+export class ValidateDateFiltersConstraint implements ValidatorConstraintInterface {
   validate(_value: unknown, args: ValidationArguments): boolean {
     const dto = args.object as {
       month?: number;

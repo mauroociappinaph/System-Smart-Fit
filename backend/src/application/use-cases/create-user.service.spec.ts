@@ -36,7 +36,11 @@ describe('CreateUserService', () => {
       $transaction: jest.fn((cb: (tx: any) => Promise<void>) => cb({})),
     };
 
-    service = new CreateUserService(mockRepository, mockOutbox, mockPrisma as any);
+    service = new CreateUserService(
+      mockRepository,
+      mockOutbox,
+      mockPrisma as any,
+    );
   });
 
   it('should create a user and return the userId from command', async () => {
@@ -51,7 +55,10 @@ describe('CreateUserService', () => {
 
     expect(mockRepository.save).toHaveBeenCalledTimes(1);
     const savedUser = mockRepository.save.mock.calls[0][0];
-    expect(mockRepository.save).toHaveBeenCalledWith(expect.any(Object), expect.any(Object));
+    expect(mockRepository.save).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.any(Object),
+    );
     expect(savedUser.name).toBe(validCommand.name);
     expect(savedUser.weightKg).toBe(validCommand.weightKg);
     expect(savedUser.goal).toBe(validCommand.goal);

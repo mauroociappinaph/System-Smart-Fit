@@ -41,7 +41,8 @@ export class UserPrismaRepository implements UserRepository {
     if (!record) return null;
 
     // Map legacy ADMIN role to USER after enum removal
-    const role = record.role === 'ADMIN' ? UserRole.USER : (record.role as UserRole);
+    const role =
+      record.role === 'ADMIN' ? UserRole.USER : (record.role as UserRole);
 
     return User.reconstitute({
       id: record.id,

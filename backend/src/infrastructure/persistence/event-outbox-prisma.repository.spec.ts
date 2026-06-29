@@ -54,7 +54,13 @@ describe('PrismaOutboxRepository', () => {
 
   describe('save', () => {
     it('should create outbox entry with correct data', async () => {
-      const event = new TestEvent('evt-1', 'user.registered', 'corr-1', Date.now(), { value: 'data' });
+      const event = new TestEvent(
+        'evt-1',
+        'user.registered',
+        'corr-1',
+        Date.now(),
+        { value: 'data' },
+      );
 
       await repository.save(event);
 
@@ -71,7 +77,9 @@ describe('PrismaOutboxRepository', () => {
     });
 
     it('should propagate prisma errors', async () => {
-      const event = new TestEvent('evt-2', 'test.event', 'corr-2', Date.now(), { value: 'data' });
+      const event = new TestEvent('evt-2', 'test.event', 'corr-2', Date.now(), {
+        value: 'data',
+      });
       prisma.eventOutbox.create.mockRejectedValue(new Error('DB error'));
 
       await expect(repository.save(event)).rejects.toThrow('DB error');

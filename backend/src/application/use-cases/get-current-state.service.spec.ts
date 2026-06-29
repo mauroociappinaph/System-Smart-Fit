@@ -1,6 +1,9 @@
 import { GetCurrentStateService } from './get-current-state.service';
 import { UserStateRepository } from '../ports/out/user-state.repository';
-import { UserState, UserStateEnum } from '../../domain/entities/user-state.entity';
+import {
+  UserState,
+  UserStateEnum,
+} from '../../domain/entities/user-state.entity';
 
 describe('GetCurrentStateService', () => {
   let service: GetCurrentStateService;
@@ -20,9 +23,14 @@ describe('GetCurrentStateService', () => {
   it('should return current state when user has one', async () => {
     const transitionedAt = Date.now();
     const { entity } = UserState.transition(
-      'id-1', 'evt-1', 'user-1',
-      UserStateEnum.ACTIVE_TRACKING, UserStateEnum.IDLE, UserStateEnum.IDLE,
-      transitionedAt, 'corr-1',
+      'id-1',
+      'evt-1',
+      'user-1',
+      UserStateEnum.ACTIVE_TRACKING,
+      UserStateEnum.IDLE,
+      UserStateEnum.IDLE,
+      transitionedAt,
+      'corr-1',
     );
 
     mockRepo.findCurrentByUserId.mockResolvedValue(entity);

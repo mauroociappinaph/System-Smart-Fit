@@ -36,7 +36,9 @@ describe('RolesGuard', () => {
   it('should return true when no roles metadata is set', () => {
     mockGetAllAndOverride.mockReturnValue(undefined);
 
-    const result = guard.canActivate(createContext({ sub: 'u1', email: 'a@b.com', role: 'USER' }));
+    const result = guard.canActivate(
+      createContext({ sub: 'u1', email: 'a@b.com', role: 'USER' }),
+    );
 
     expect(result).toBe(true);
   });

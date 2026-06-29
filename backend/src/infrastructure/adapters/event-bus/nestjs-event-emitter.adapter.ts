@@ -1,7 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { DomainEvent } from '../../../shared/domain/domain-event.interface';
-import { EventBusPort, EVENT_BUS_PORT } from '../../../application/ports/out/event-bus.port';
+import {
+  EventBusPort,
+  EVENT_BUS_PORT,
+} from '../../../application/ports/out/event-bus.port';
 
 @Injectable()
 export class NestjsEventEmitterAdapter implements EventBusPort {

@@ -23,14 +23,30 @@ export class User {
     private readonly _registeredAt: number,
   ) {}
 
-  public get id(): string { return this._id; }
-  public get name(): string { return this._name; }
-  public get weightKg(): number { return this._weightKg; }
-  public get heightCm(): number { return this._heightCm; }
-  public get birthDate(): number { return this._birthDate; }
-  public get goal(): UserGoal { return this._goal; }
-  public get role(): UserRole { return this._role; }
-  public get registeredAt(): number { return this._registeredAt; }
+  public get id(): string {
+    return this._id;
+  }
+  public get name(): string {
+    return this._name;
+  }
+  public get weightKg(): number {
+    return this._weightKg;
+  }
+  public get heightCm(): number {
+    return this._heightCm;
+  }
+  public get birthDate(): number {
+    return this._birthDate;
+  }
+  public get goal(): UserGoal {
+    return this._goal;
+  }
+  public get role(): UserRole {
+    return this._role;
+  }
+  public get registeredAt(): number {
+    return this._registeredAt;
+  }
 
   /**
    * Reconstitute a User from persisted data (bypasses factory logic).
@@ -103,7 +119,16 @@ export class User {
       throw new Error(`User: invalid role "${role}"`);
     }
 
-    const entity = new User(id, name, weightKg, heightCm, birthDate, goal, role, registeredAt);
+    const entity = new User(
+      id,
+      name,
+      weightKg,
+      heightCm,
+      birthDate,
+      goal,
+      role,
+      registeredAt,
+    );
 
     const event = new UserRegistered(eventId, id, registeredAt, {
       name,

@@ -43,9 +43,14 @@ describe('CreateInsightService', () => {
     expect(result.event.correlationId).toBe('corr-1');
     expect(result.event.payload.userId).toBe('user-1');
     expect(result.event.payload.category).toBe('nutrition');
-    expect(result.event.payload.content).toBe('User should increase protein intake');
+    expect(result.event.payload.content).toBe(
+      'User should increase protein intake',
+    );
     expect(result.event.payload.score).toBe(0.85);
-    expect(mockRepo.save).toHaveBeenCalledWith(expect.any(Object), expect.any(Object));
+    expect(mockRepo.save).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.any(Object),
+    );
   });
 
   it('should use provided insightId and eventId', async () => {
@@ -62,6 +67,9 @@ describe('CreateInsightService', () => {
     expect(result.entityId).toBe('insight-fixed');
     expect(result.event.eventId).toBe('event-fixed');
     expect(result.event.payload.insightId).toBe('insight-fixed');
-    expect(mockRepo.save).toHaveBeenCalledWith(expect.any(Object), expect.any(Object));
+    expect(mockRepo.save).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.any(Object),
+    );
   });
 });

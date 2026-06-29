@@ -4,11 +4,15 @@ import { RecordHealthTelemetryService } from '../../application/use-cases/record
 
 @Controller('telemetry')
 export class HealthTelemetryController {
-  constructor(private readonly recordTelemetryService: RecordHealthTelemetryService) {}
+  constructor(
+    private readonly recordTelemetryService: RecordHealthTelemetryService,
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.ACCEPTED)
-  async recordTelemetry(@Body() requestDto: RecordHealthTelemetryRequestDto): Promise<void> {
+  async recordTelemetry(
+    @Body() requestDto: RecordHealthTelemetryRequestDto,
+  ): Promise<void> {
     await this.recordTelemetryService.execute({
       userId: requestDto.userId,
       metricType: requestDto.metricType,

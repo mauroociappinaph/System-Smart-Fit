@@ -12,7 +12,14 @@ import { DomainExceptionFilter } from './presentation/filters/domain-exception.f
 import { RolesGuard } from './modules/auth/guards/roles.guard';
 
 @Module({
-  imports: [PrismaModule, HealthTelemetryModule, UserModule, UserStateModule, AgentInsightModule, AuthModule],
+  imports: [
+    PrismaModule,
+    HealthTelemetryModule,
+    UserModule,
+    UserStateModule,
+    AgentInsightModule,
+    AuthModule,
+  ],
   controllers: [AppController],
   providers: [
     AppService,

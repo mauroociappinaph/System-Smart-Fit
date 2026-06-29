@@ -51,9 +51,14 @@ describe('AuthController', () => {
     it('should call authService.signup and return the result', async () => {
       const expected = {
         accessToken: 'token-123',
-        user: { id: 'uid', email: signupDto.email, role: 'USER' as const, name: signupDto.name },
+        user: {
+          id: 'uid',
+          email: signupDto.email,
+          role: 'USER' as const,
+          name: signupDto.name,
+        },
       };
-      mockService.signup.mockResolvedValue(expected as any);
+      mockService.signup.mockResolvedValue(expected);
 
       const result = await controller.signup(signupDto);
 
@@ -68,7 +73,7 @@ describe('AuthController', () => {
         accessToken: 'token-456',
         user: { id: 'uid', email: loginDto.email, role: 'USER' as const },
       };
-      mockService.login.mockResolvedValue(expected as any);
+      mockService.login.mockResolvedValue(expected);
 
       const result = await controller.login(loginDto);
 
@@ -79,7 +84,11 @@ describe('AuthController', () => {
 
   describe('GET /auth/me', () => {
     it('should call authService.me with current user sub', async () => {
-      const currentUser = { sub: 'user-1', email: 'test@example.com', role: 'USER' };
+      const currentUser = {
+        sub: 'user-1',
+        email: 'test@example.com',
+        role: 'USER',
+      };
       const expected = {
         id: 'user-1',
         email: 'test@example.com',

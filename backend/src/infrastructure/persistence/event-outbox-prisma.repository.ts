@@ -13,7 +13,10 @@ export class PrismaOutboxRepository implements OutboxRepositoryPort {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async save(event: DomainEvent<unknown>, tx?: Prisma.TransactionClient): Promise<void> {
+  async save(
+    event: DomainEvent<unknown>,
+    tx?: Prisma.TransactionClient,
+  ): Promise<void> {
     const now = Date.now();
     const client = tx ?? this.prisma;
 
@@ -21,14 +24,17 @@ export class PrismaOutboxRepository implements OutboxRepositoryPort {
       data: {
         id: event.eventId,
         eventName: event.eventName,
-        payload: event.payload !== undefined ? JSON.stringify(event.payload) : 'null',
+        payload:
+          event.payload !== undefined ? JSON.stringify(event.payload) : 'null',
         status: 'PENDING',
         correlationId: event.correlationId,
         createdAt: now,
       },
     });
 
-    this.logger.debug(`Outbox entry saved: ${event.eventId} (${event.eventName})`);
+    this.logger.debug(
+      `Outbox entry saved: ${event.eventId} (${event.eventName})`,
+    );
   }
 
   async findPending(limit = 50, olderThanMs = 5_000): Promise<OutboxEntry[]> {
@@ -90,7 +96,10 @@ export class PrismaOutboxRepository implements OutboxRepositoryPort {
   }
 
   private safeBigIntToNumber(value: bigint): number {
-    if (value > BigInt(Number.MAX_SAFE_INTEGER) || value < BigInt(Number.MIN_SAFE_INTEGER)) {
+    if (
+      value > BigInt(Number.MAX_SAFE_INTEGER) ||
+      value < BigInt(Number.MIN_SAFE_INTEGER)
+    ) {
       throw new Error(`BigInt value ${value} exceeds safe integer range`);
     }
     return Number(value);
@@ -115,7 +124,10 @@ export class PrismaOutboxRepository implements OutboxRepositoryPort {
       status,
       correlationId: record.correlationId,
       createdAt: this.safeBigIntToNumber(record.createdAt),
-      publishedAt: record.publishedAt !== null ? this.safeBigIntToNumber(record.publishedAt) : null,
+      publishedAt:
+        record.publishedAt !== null
+          ? this.safeBigIntToNumber(record.publishedAt)
+          : null,
       error: record.error,
       retryCount: record.retryCount,
     };

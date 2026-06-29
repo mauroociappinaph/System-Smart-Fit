@@ -28,7 +28,9 @@ export class AgentInsightController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() dto: CreateInsightRequestDto): Promise<{ insightId: string }> {
+  async create(
+    @Body() dto: CreateInsightRequestDto,
+  ): Promise<{ insightId: string }> {
     const { entityId } = await this.createInsightService.execute({
       userId: dto.userId,
       correlationId: dto.correlationId,

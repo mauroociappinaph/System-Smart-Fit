@@ -28,7 +28,9 @@ export class AuthService {
     private readonly userRepository: UserRepository,
   ) {}
 
-  async signup(dto: SignupRequestDto): Promise<SignupResponseDto | MagicLinkResponseDto> {
+  async signup(
+    dto: SignupRequestDto,
+  ): Promise<SignupResponseDto | MagicLinkResponseDto> {
     // Magic link flow — no password provided
     if (!dto.password) {
       const { error } = await this.supabaseClient.auth.signInWithOtp({

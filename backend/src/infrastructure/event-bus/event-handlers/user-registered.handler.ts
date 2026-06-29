@@ -7,7 +7,9 @@ export class UserRegisteredHandler {
 
   @OnEvent('user.registered')
   handle(payload: any) {
-    this.logger.log(`User registered event received: ${JSON.stringify(payload)}`);
+    this.logger.log(
+      `User registered event received: ${JSON.stringify(payload)}`,
+    );
     // Future: send welcome email, create default settings, etc.
   }
 }

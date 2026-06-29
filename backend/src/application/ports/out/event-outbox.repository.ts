@@ -16,7 +16,10 @@ export interface OutboxEntry {
 export const OUTBOX_REPOSITORY_PORT = Symbol('OutboxRepositoryPort');
 
 export interface OutboxRepositoryPort {
-  save(event: DomainEvent<unknown>, tx?: Prisma.TransactionClient): Promise<void>;
+  save(
+    event: DomainEvent<unknown>,
+    tx?: Prisma.TransactionClient,
+  ): Promise<void>;
   findPending(limit?: number, olderThanMs?: number): Promise<OutboxEntry[]>;
   markPublished(id: string): Promise<void>;
   markFailed(id: string, error: string): Promise<void>;

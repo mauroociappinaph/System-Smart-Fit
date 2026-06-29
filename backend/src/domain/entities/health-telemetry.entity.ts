@@ -40,14 +40,30 @@ export class HealthTelemetry {
     private readonly _correlationId: string,
   ) {}
 
-  public get id(): string { return this._id; }
-  public get userId(): string { return this._userId; }
-  public get metricType(): MetricType { return this._metricType; }
-  public get value(): number { return this._value; }
-  public get unit(): MetricUnit { return this._unit; }
-  public get deviceTimestamp(): number { return this._deviceTimestamp; }
-  public get serverReceivedAt(): number { return this._serverReceivedAt; }
-  public get correlationId(): string { return this._correlationId; }
+  public get id(): string {
+    return this._id;
+  }
+  public get userId(): string {
+    return this._userId;
+  }
+  public get metricType(): MetricType {
+    return this._metricType;
+  }
+  public get value(): number {
+    return this._value;
+  }
+  public get unit(): MetricUnit {
+    return this._unit;
+  }
+  public get deviceTimestamp(): number {
+    return this._deviceTimestamp;
+  }
+  public get serverReceivedAt(): number {
+    return this._serverReceivedAt;
+  }
+  public get correlationId(): string {
+    return this._correlationId;
+  }
 
   /**
    * Factory method to create a new HealthTelemetry instance and its corresponding domain event.
@@ -64,7 +80,6 @@ export class HealthTelemetry {
     serverReceivedAt: number,
     correlationId: string,
   ): { entity: HealthTelemetry; event: HealthDataRecorded } {
-    
     // Guard Clauses to prevent invalid states
     if (!userId) {
       throw new MissingRequiredFieldError('HealthTelemetry', 'userId');
@@ -76,7 +91,11 @@ export class HealthTelemetry {
       throw new MissingRequiredFieldError('HealthTelemetry', 'unit');
     }
     if (value < 0) {
-      throw new InvalidFieldValueError('HealthTelemetry', 'value', 'cannot be negative');
+      throw new InvalidFieldValueError(
+        'HealthTelemetry',
+        'value',
+        'cannot be negative',
+      );
     }
 
     const entity = new HealthTelemetry(
@@ -100,7 +119,7 @@ export class HealthTelemetry {
         value,
         unit,
         deviceTimestamp,
-      }
+      },
     );
 
     return { entity, event };

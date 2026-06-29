@@ -8,7 +8,11 @@ import { AgentInsight } from '../../domain/entities/agent-insight.entity';
 export const GENERATE_INSIGHTS_PORT = 'GenerateInsightsPort';
 
 export interface GenerateInsightsPort {
-  generateInsights(userId: string, correlationId: string, telemetryId?: string): Promise<AgentInsight[]>;
+  generateInsights(
+    userId: string,
+    correlationId: string,
+    telemetryId?: string,
+  ): Promise<AgentInsight[]>;
   validateInsight(insightId: string, action: string): Promise<void>;
 }
 
@@ -16,8 +20,14 @@ export interface GenerateInsightsPort {
 export class InferenceStubAdapter implements GenerateInsightsPort {
   private readonly logger = new Logger(InferenceStubAdapter.name);
 
-  async generateInsights(userId: string, _correlationId: string, _telemetryId?: string): Promise<AgentInsight[]> {
-    this.logger.warn(`Using stub inference adapter for user ${userId}. TODO: replace with real AI integration.`);
+  async generateInsights(
+    userId: string,
+    _correlationId: string,
+    _telemetryId?: string,
+  ): Promise<AgentInsight[]> {
+    this.logger.warn(
+      `Using stub inference adapter for user ${userId}. TODO: replace with real AI integration.`,
+    );
     return []; // Stub: return empty until real adapter is implemented
   }
 

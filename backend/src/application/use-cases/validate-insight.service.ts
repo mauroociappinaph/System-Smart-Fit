@@ -1,6 +1,9 @@
 import { randomUUID } from 'crypto';
 import { Injectable, Inject } from '@nestjs/common';
-import { ValidateInsightUseCase, ValidationAction } from '../ports/in/validate-insight.use-case';
+import {
+  ValidateInsightUseCase,
+  ValidationAction,
+} from '../ports/in/validate-insight.use-case';
 import type { AgentInsightRepository } from '../ports/out/agent-insight.repository';
 import { AgentInsight } from '../../domain/entities/agent-insight.entity';
 import { InsightValidated } from '../../domain/events/insight-validated.event';
@@ -20,7 +23,10 @@ export class ValidateInsightService implements ValidateInsightUseCase {
     private readonly prisma: PrismaService,
   ) {}
 
-  async execute(insightId: string, action: ValidationAction): Promise<AgentInsight> {
+  async execute(
+    insightId: string,
+    action: ValidationAction,
+  ): Promise<AgentInsight> {
     const insight = await this.agentInsightRepository.findById(insightId);
 
     if (!insight) {

@@ -23,7 +23,11 @@ describe('RecordHealthTelemetryService', () => {
     mockPrisma = {
       $transaction: jest.fn((cb: (tx: any) => Promise<void>) => cb({})),
     };
-    service = new RecordHealthTelemetryService(mockRepository, mockOutbox, mockPrisma as any);
+    service = new RecordHealthTelemetryService(
+      mockRepository,
+      mockOutbox,
+      mockPrisma as any,
+    );
   });
 
   it('should successfully record telemetry and save to repository', async () => {
@@ -38,7 +42,10 @@ describe('RecordHealthTelemetryService', () => {
     await service.execute(command);
 
     expect(mockRepository.save).toHaveBeenCalledTimes(1);
-    expect(mockRepository.save).toHaveBeenCalledWith(expect.any(Object), expect.any(Object));
+    expect(mockRepository.save).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.any(Object),
+    );
     const savedEntity = mockRepository.save.mock.calls[0][0];
     expect(savedEntity.userId).toBe('user-1');
     expect(savedEntity.value).toBe(120);
@@ -53,7 +60,9 @@ describe('RecordHealthTelemetryService', () => {
       deviceTimestamp: Date.now(),
     };
 
-    await expect(service.execute(command)).rejects.toThrow('HealthTelemetry: Invalid value for field "value"');
+    await expect(service.execute(command)).rejects.toThrow(
+      'HealthTelemetry: Invalid value for field "value"',
+    );
     expect(mockRepository.save).not.toHaveBeenCalled();
   });
 });

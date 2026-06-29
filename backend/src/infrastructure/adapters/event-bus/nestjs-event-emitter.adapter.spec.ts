@@ -2,7 +2,10 @@ import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NESTJS_EVENT_EMITTER_ADAPTER_PROVIDER } from './nestjs-event-emitter.adapter';
-import { EVENT_BUS_PORT, EventBusPort } from '../../../application/ports/out/event-bus.port';
+import {
+  EVENT_BUS_PORT,
+  EventBusPort,
+} from '../../../application/ports/out/event-bus.port';
 import { DomainEvent } from '../../../shared/domain/domain-event.interface';
 
 // Test domain event
@@ -51,7 +54,9 @@ describe('EventBusPort Contract', () => {
 
   describe('publish', () => {
     it('should emit event with correct name and payload', async () => {
-      const event = new TestEvent('evt-1', 'corr-1', Date.now(), { test: 'data' });
+      const event = new TestEvent('evt-1', 'corr-1', Date.now(), {
+        test: 'data',
+      });
 
       await adapter.publish(event);
 
@@ -59,14 +64,18 @@ describe('EventBusPort Contract', () => {
     });
 
     it('should reject when emitter fails', async () => {
-      const event = new TestEvent('evt-2', 'corr-2', Date.now(), { test: 'data' });
+      const event = new TestEvent('evt-2', 'corr-2', Date.now(), {
+        test: 'data',
+      });
       eventEmitter.emitAsync.mockRejectedValueOnce(new Error('Emitter error'));
 
       await expect(adapter.publish(event)).rejects.toThrow('Emitter error');
     });
 
     it('should log debug on successful publish', async () => {
-      const event = new TestEvent('evt-3', 'corr-3', Date.now(), { test: 'data' });
+      const event = new TestEvent('evt-3', 'corr-3', Date.now(), {
+        test: 'data',
+      });
 
       await adapter.publish(event);
 
@@ -88,9 +97,18 @@ describe('EventBusPort Contract', () => {
       await adapter.publishAll(events);
 
       expect(eventEmitter.emitAsync).toHaveBeenCalledTimes(3);
-      expect(eventEmitter.emitAsync).toHaveBeenCalledWith('test.event', events[0]);
-      expect(eventEmitter.emitAsync).toHaveBeenCalledWith('test.event', events[1]);
-      expect(eventEmitter.emitAsync).toHaveBeenCalledWith('test.event', events[2]);
+      expect(eventEmitter.emitAsync).toHaveBeenCalledWith(
+        'test.event',
+        events[0],
+      );
+      expect(eventEmitter.emitAsync).toHaveBeenCalledWith(
+        'test.event',
+        events[1],
+      );
+      expect(eventEmitter.emitAsync).toHaveBeenCalledWith(
+        'test.event',
+        events[2],
+      );
     });
 
     it('should wait for all emissions to complete', async () => {

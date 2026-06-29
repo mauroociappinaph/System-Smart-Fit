@@ -1,4 +1,10 @@
-import { IsString, IsNumber, IsNotEmpty, IsOptional, Min } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsNotEmpty,
+  IsOptional,
+  Min,
+} from 'class-validator';
 
 export class RecordHealthTelemetryRequestDto {
   @IsString()

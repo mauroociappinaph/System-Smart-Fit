@@ -24,7 +24,7 @@ export class OutboxPublisherService {
 
     this.logger.log(`Processing ${pending.length} pending outbox events...`);
 
-    const toPublish = pending.map(e => ({
+    const toPublish = pending.map((e) => ({
       eventName: e.eventName,
       payload: e.payload,
       metadata: { correlationId: e.correlationId, outboxId: e.id },
@@ -32,8 +32,10 @@ export class OutboxPublisherService {
 
     try {
       await this.eventBus.publishAll(toPublish as any);
-      const ids = pending.map(e => e.id);
-      await Promise.all(ids.map(id => this.outboxRepository.markPublished(id)));
+      const ids = pending.map((e) => e.id);
+      await Promise.all(
+        ids.map((id) => this.outboxRepository.markPublished(id)),
+      );
       this.logger.log(`Published ${ids.length} events successfully`);
     } catch (err) {
       this.logger.error(`Failed to publish batch: ${(err as Error).message}`);
@@ -41,7 +43,10 @@ export class OutboxPublisherService {
       for (const entry of pending) {
         const maxRetries = 5;
         if (entry.retryCount >= maxRetries) {
-          await this.outboxRepository.markFailed(entry.id, `Max retries exceeded: ${(err as Error).message}`);
+          await this.outboxRepository.markFailed(
+            entry.id,
+            `Max retries exceeded: ${(err as Error).message}`,
+          );
         } else {
           await this.outboxRepository.incrementRetry(entry.id);
         }

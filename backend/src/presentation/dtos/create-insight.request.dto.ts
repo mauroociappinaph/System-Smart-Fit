@@ -1,4 +1,12 @@
-import { IsString, IsNumber, IsNotEmpty, IsOptional, Min, Max, IsUUID } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsNotEmpty,
+  IsOptional,
+  Min,
+  Max,
+  IsUUID,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateInsightRequestDto {

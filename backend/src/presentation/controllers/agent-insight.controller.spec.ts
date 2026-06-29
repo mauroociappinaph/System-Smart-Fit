@@ -6,7 +6,10 @@ import { GetUserInsightsService } from '../../application/use-cases/get-user-ins
 import { CreateInsightRequestDto } from '../dtos/create-insight.request.dto';
 import { ValidateInsightRequestDto } from '../dtos/validate-insight.request.dto';
 import { ListInsightsQueryDto } from '../dtos/list-insights.query.dto';
-import { AgentInsight, ValidationStatus } from '../../domain/entities/agent-insight.entity';
+import {
+  AgentInsight,
+  ValidationStatus,
+} from '../../domain/entities/agent-insight.entity';
 
 describe('AgentInsightController', () => {
   let controller: AgentInsightController;
@@ -18,7 +21,9 @@ describe('AgentInsightController', () => {
 
   beforeEach(async () => {
     mockCreateService = {
-      execute: jest.fn().mockResolvedValue({ entityId: 'insight-1', event: {} }),
+      execute: jest
+        .fn()
+        .mockResolvedValue({ entityId: 'insight-1', event: {} }),
     } as any;
 
     mockValidateService = {
@@ -183,7 +188,10 @@ describe('AgentInsightController', () => {
     it('should pass startDate/endDate filter to service', async () => {
       mockListService.execute.mockResolvedValue({ data: [], total: 0 });
 
-      const query = { startDate: 1700000000000, endDate: 1700100000000 } as ListInsightsQueryDto;
+      const query = {
+        startDate: 1700000000000,
+        endDate: 1700100000000,
+      } as ListInsightsQueryDto;
 
       await controller.list(query, mockUser);
 
@@ -204,7 +212,10 @@ describe('AgentInsightController', () => {
 
       const result = await controller.validate('insight-1', dto);
 
-      expect(mockValidateService.execute).toHaveBeenCalledWith('insight-1', 'approve');
+      expect(mockValidateService.execute).toHaveBeenCalledWith(
+        'insight-1',
+        'approve',
+      );
       expect(result).toEqual({ insightId: 'insight-1', status: 'approved' });
     });
 
@@ -214,9 +225,14 @@ describe('AgentInsightController', () => {
         validationStatus: 'rejected',
       } as any);
 
-      const result = await controller.validate('insight-2', { action: 'reject' });
+      const result = await controller.validate('insight-2', {
+        action: 'reject',
+      });
 
-      expect(mockValidateService.execute).toHaveBeenCalledWith('insight-2', 'reject');
+      expect(mockValidateService.execute).toHaveBeenCalledWith(
+        'insight-2',
+        'reject',
+      );
       expect(result).toEqual({ insightId: 'insight-2', status: 'rejected' });
     });
 
@@ -226,9 +242,14 @@ describe('AgentInsightController', () => {
         validationStatus: 'discarded',
       } as any);
 
-      const result = await controller.validate('insight-3', { action: 'discard' });
+      const result = await controller.validate('insight-3', {
+        action: 'discard',
+      });
 
-      expect(mockValidateService.execute).toHaveBeenCalledWith('insight-3', 'discard');
+      expect(mockValidateService.execute).toHaveBeenCalledWith(
+        'insight-3',
+        'discard',
+      );
       expect(result).toEqual({ insightId: 'insight-3', status: 'discarded' });
     });
   });

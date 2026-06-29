@@ -1,4 +1,11 @@
-import { IsString, IsNotEmpty, IsOptional, IsInt, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsInt,
+  Min,
+  Max,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class ListInsightsQueryDto {
@@ -20,7 +27,7 @@ export class ListInsightsQueryDto {
   offset?: number;
 
   /**
-   * Filter by month (1–12). 
+   * Filter by month (1–12).
    * Mutually exclusive with startDate/endDate.
    * C3 — ensures month does not exceed 12.
    */

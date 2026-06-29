@@ -38,12 +38,24 @@ export class UserState {
     private readonly _correlationId: string,
   ) {}
 
-  public get id(): string { return this._id; }
-  public get userId(): string { return this._userId; }
-  public get currentState(): UserStateEnum { return this._currentState; }
-  public get previousState(): UserStateEnum | null { return this._previousState; }
-  public get transitionedAt(): number { return this._transitionedAt; }
-  public get correlationId(): string { return this._correlationId; }
+  public get id(): string {
+    return this._id;
+  }
+  public get userId(): string {
+    return this._userId;
+  }
+  public get currentState(): UserStateEnum {
+    return this._currentState;
+  }
+  public get previousState(): UserStateEnum | null {
+    return this._previousState;
+  }
+  public get transitionedAt(): number {
+    return this._transitionedAt;
+  }
+  public get correlationId(): string {
+    return this._correlationId;
+  }
 
   /**
    * Factory method — creates a new UserState transition and its domain event.
@@ -121,7 +133,14 @@ export class UserState {
     transitionedAt: number,
     correlationId: string,
   ): UserState {
-    return new UserState(id, userId, currentState, previousState, transitionedAt, correlationId);
+    return new UserState(
+      id,
+      userId,
+      currentState,
+      previousState,
+      transitionedAt,
+      correlationId,
+    );
   }
 
   /**

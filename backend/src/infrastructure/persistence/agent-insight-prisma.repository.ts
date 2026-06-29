@@ -15,7 +15,10 @@ import {
 export class AgentInsightPrismaRepository implements AgentInsightRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async save(insight: AgentInsight, tx?: Prisma.TransactionClient): Promise<void> {
+  async save(
+    insight: AgentInsight,
+    tx?: Prisma.TransactionClient,
+  ): Promise<void> {
     const client = tx ?? this.prisma;
 
     await client.agentInsight.upsert({

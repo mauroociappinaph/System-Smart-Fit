@@ -74,7 +74,9 @@ describe('SupabaseAuthGuard', () => {
   });
 
   it('should inject default USER role when app_metadata.role is missing', async () => {
-    const request: Record<string, any> = { headers: { authorization: 'Bearer valid-token' } };
+    const request: Record<string, any> = {
+      headers: { authorization: 'Bearer valid-token' },
+    };
     const context = {
       switchToHttp: () => ({
         getRequest: () => request,

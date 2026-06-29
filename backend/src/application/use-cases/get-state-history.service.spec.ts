@@ -1,6 +1,9 @@
 import { GetStateHistoryService } from './get-state-history.service';
 import { UserStateRepository } from '../ports/out/user-state.repository';
-import { UserState, UserStateEnum } from '../../domain/entities/user-state.entity';
+import {
+  UserState,
+  UserStateEnum,
+} from '../../domain/entities/user-state.entity';
 
 describe('GetStateHistoryService', () => {
   let service: GetStateHistoryService;
@@ -20,9 +23,14 @@ describe('GetStateHistoryService', () => {
   it('should return paginated history', async () => {
     const transitionedAt = Date.now();
     const { entity } = UserState.transition(
-      'id-1', 'evt-1', 'user-1',
-      UserStateEnum.IDLE, null, null,
-      transitionedAt, 'corr-1',
+      'id-1',
+      'evt-1',
+      'user-1',
+      UserStateEnum.IDLE,
+      null,
+      null,
+      transitionedAt,
+      'corr-1',
     );
 
     mockRepo.findHistoryByUserId.mockResolvedValue([entity]);
@@ -32,7 +40,10 @@ describe('GetStateHistoryService', () => {
 
     expect(result.data).toHaveLength(1);
     expect(result.total).toBe(1);
-    expect(mockRepo.findHistoryByUserId).toHaveBeenCalledWith('user-1', { limit: 10, offset: 0 });
+    expect(mockRepo.findHistoryByUserId).toHaveBeenCalledWith('user-1', {
+      limit: 10,
+      offset: 0,
+    });
     expect(mockRepo.countHistoryByUserId).toHaveBeenCalledWith('user-1');
   });
 

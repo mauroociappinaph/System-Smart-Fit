@@ -165,7 +165,7 @@ describe('AuthService', () => {
     it('should send magic link when no password is provided', async () => {
       mockSignInWithOtp.mockResolvedValue({ data: {}, error: null });
 
-      const result = await service.signup(magicLinkDto as any);
+      const result = await service.signup(magicLinkDto);
 
       expect(mockSignInWithOtp).toHaveBeenCalledWith({
         email: magicLinkDto.email,
@@ -268,9 +268,9 @@ describe('AuthService', () => {
     it('should throw UnauthorizedException when user is not found', async () => {
       mockFindById.mockResolvedValue(null);
 
-      await expect(service.me('nonexistent', 'test@example.com')).rejects.toThrow(
-        UnauthorizedException,
-      );
+      await expect(
+        service.me('nonexistent', 'test@example.com'),
+      ).rejects.toThrow(UnauthorizedException);
     });
   });
 });

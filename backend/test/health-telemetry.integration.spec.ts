@@ -2,13 +2,20 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { randomUUID } from 'crypto';
 import { RecordHealthTelemetryService } from '../src/application/use-cases/record-health-telemetry.service';
 import { RecordHealthTelemetryCommand } from '../src/application/ports/in/record-health-telemetry.command';
-import { OUTBOX_REPOSITORY_PORT, OutboxRepositoryPort } from '../src/application/ports/out/event-outbox.repository';
+import {
+  OUTBOX_REPOSITORY_PORT,
+  OutboxRepositoryPort,
+} from '../src/application/ports/out/event-outbox.repository';
 import { PrismaService } from '../src/infrastructure/prisma/prisma.service';
 
 describe('HealthTelemetry → Outbox Integration', () => {
   let service: RecordHealthTelemetryService;
   let outboxRepository: jest.Mocked<OutboxRepositoryPort>;
-  let savedEvents: Array<{ eventName: string; payload: string; status: string }>;
+  let savedEvents: Array<{
+    eventName: string;
+    payload: string;
+    status: string;
+  }>;
 
   const mockPrisma = {
     $transaction: jest.fn((cb: (tx: any) => Promise<void>) => cb({})),
@@ -39,13 +46,18 @@ describe('HealthTelemetry → Outbox Integration', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         RecordHealthTelemetryService,
-        { provide: 'HealthTelemetryRepository', useValue: mockTelemetryRepository },
+        {
+          provide: 'HealthTelemetryRepository',
+          useValue: mockTelemetryRepository,
+        },
         { provide: OUTBOX_REPOSITORY_PORT, useValue: mockOutboxRepository },
         { provide: PrismaService, useValue: mockPrisma },
       ],
     }).compile();
 
-    service = module.get<RecordHealthTelemetryService>(RecordHealthTelemetryService);
+    service = module.get<RecordHealthTelemetryService>(
+      RecordHealthTelemetryService,
+    );
     outboxRepository = module.get(OUTBOX_REPOSITORY_PORT);
   });
 
@@ -72,7 +84,9 @@ describe('HealthTelemetry → Outbox Integration', () => {
   });
 
   it('should save health telemetry and roll back outbox on transaction failure', async () => {
-    const mockTransaction = jest.fn().mockRejectedValue(new Error('DB failure'));
+    const mockTransaction = jest
+      .fn()
+      .mockRejectedValue(new Error('DB failure'));
     const module = await Test.createTestingModule({
       providers: [
         RecordHealthTelemetryService,
@@ -98,7 +112,9 @@ describe('HealthTelemetry → Outbox Integration', () => {
       ],
     }).compile();
 
-    const svc = module.get<RecordHealthTelemetryService>(RecordHealthTelemetryService);
+    const svc = module.get<RecordHealthTelemetryService>(
+      RecordHealthTelemetryService,
+    );
 
     await expect(
       svc.execute({

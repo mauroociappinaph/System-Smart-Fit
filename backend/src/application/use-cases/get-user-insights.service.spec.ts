@@ -1,6 +1,9 @@
 import { GetUserInsightsService } from './get-user-insights.service';
 import { AgentInsightRepository } from '../ports/out/agent-insight.repository';
-import { AgentInsight, ValidationStatus } from '../../domain/entities/agent-insight.entity';
+import {
+  AgentInsight,
+  ValidationStatus,
+} from '../../domain/entities/agent-insight.entity';
 
 describe('GetUserInsightsService', () => {
   let service: GetUserInsightsService;
@@ -39,7 +42,11 @@ describe('GetUserInsightsService', () => {
 
     expect(result.data).toHaveLength(2);
     expect(result.total).toBe(2);
-    expect(mockRepo.findByUserId).toHaveBeenCalledWith('user-1', { limit: 10, offset: 0, dateFilter: undefined });
+    expect(mockRepo.findByUserId).toHaveBeenCalledWith('user-1', {
+      limit: 10,
+      offset: 0,
+      dateFilter: undefined,
+    });
     expect(mockRepo.countByUserId).toHaveBeenCalledWith('user-1', undefined);
   });
 
@@ -63,7 +70,7 @@ describe('GetUserInsightsService', () => {
 
     const today = new Date();
     const year = today.getFullYear();
-    const expectedStart = new Date(year, 2, 1).getTime();       // March 1
+    const expectedStart = new Date(year, 2, 1).getTime(); // March 1
     const expectedEnd = new Date(year, 3, 0, 23, 59, 59, 999).getTime(); // March 31
 
     expect(mockRepo.findByUserId).toHaveBeenCalledWith('user-1', {
@@ -90,7 +97,10 @@ describe('GetUserInsightsService', () => {
       offset: undefined,
       dateFilter: { startDate, endDate },
     });
-    expect(mockRepo.countByUserId).toHaveBeenCalledWith('user-1', { startDate, endDate });
+    expect(mockRepo.countByUserId).toHaveBeenCalledWith('user-1', {
+      startDate,
+      endDate,
+    });
   });
 
   it('should allow only startDate without endDate', async () => {

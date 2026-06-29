@@ -1,4 +1,10 @@
-import { ExceptionFilter, Catch, ArgumentsHost, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { Response } from 'express';
 import { DomainError } from '../../shared/domain/error/domain.error';
 import { AgentInsightNotFoundError } from '../../shared/domain/error/agent-insight-not-found.error';
