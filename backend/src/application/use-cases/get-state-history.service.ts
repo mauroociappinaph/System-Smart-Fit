@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { GetStateHistoryUseCase } from '../ports/in/get-state-history.use-case';
-import { UserStateRepository } from '../ports/out/user-state.repository';
+import type { UserStateRepository } from '../ports/out/user-state.repository';
 import { UserState } from '../../domain/entities/user-state.entity';
 
 @Injectable()

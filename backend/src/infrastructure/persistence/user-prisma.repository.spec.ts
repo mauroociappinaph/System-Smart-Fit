@@ -5,7 +5,7 @@ import { User, UserGoal, UserRole } from '../../domain/entities/user.entity';
 
 describe('UserPrismaRepository', () => {
   let repository: UserPrismaRepository;
-  let prismaService: { user: { create: jest.Mock; findUnique: jest.Mock } };
+  let prismaService: { user: { upsert: jest.Mock; findUnique: jest.Mock } };
 
   const mockRecord = {
     id: 'user-id-1',
@@ -21,7 +21,7 @@ describe('UserPrismaRepository', () => {
   beforeEach(async () => {
     prismaService = {
       user: {
-        create: jest.fn().mockResolvedValue(undefined),
+        upsert: jest.fn().mockResolvedValue(undefined),
         findUnique: jest.fn().mockResolvedValue(null),
       },
     };
@@ -37,7 +37,7 @@ describe('UserPrismaRepository', () => {
   });
 
   describe('save', () => {
-    it('should call prisma.user.create with correct data', async () => {
+    it('should call prisma.user.upsert with correct data', async () => {
       const { entity } = User.register(
         mockRecord.id,
         'event-id-1',
@@ -52,9 +52,10 @@ describe('UserPrismaRepository', () => {
 
       await repository.save(entity);
 
-      expect(prismaService.user.create).toHaveBeenCalledTimes(1);
-      expect(prismaService.user.create).toHaveBeenCalledWith({
-        data: {
+      expect(prismaService.user.upsert).toHaveBeenCalledTimes(1);
+      expect(prismaService.user.upsert).toHaveBeenCalledWith({
+        where: { id: mockRecord.id },
+        create: expect.objectContaining({
           id: mockRecord.id,
           name: mockRecord.name,
           weightKg: mockRecord.weightKg,
@@ -63,7 +64,15 @@ describe('UserPrismaRepository', () => {
           goal: mockRecord.goal,
           role: mockRecord.role,
           registeredAt: Number(mockRecord.registeredAt),
-        },
+        }),
+        update: expect.objectContaining({
+          name: mockRecord.name,
+          weightKg: mockRecord.weightKg,
+          heightCm: mockRecord.heightCm,
+          birthDate: Number(mockRecord.birthDate),
+          goal: mockRecord.goal,
+          role: mockRecord.role,
+        }),
       });
     });
   });

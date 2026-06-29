@@ -6,7 +6,7 @@ import {
   HttpStatus,
   Res,
 } from '@nestjs/common';
-import { Response } from 'express';
+import type { Response } from 'express';
 import { Public } from '../../modules/auth/decorators/public.decorator';
 import { CreateUserRequestDto } from '../dtos/create-user.request.dto';
 import { CreateUserService } from '../../application/use-cases/create-user.service';

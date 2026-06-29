@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { AgentInsight } from '../../../domain/entities/agent-insight.entity';
 
 export interface DateFilter {
@@ -12,7 +13,7 @@ export interface FindByUserIdOptions {
 }
 
 export interface AgentInsightRepository {
-  save(insight: AgentInsight): Promise<void>;
+  save(insight: AgentInsight, tx?: Prisma.TransactionClient): Promise<void>;
   findById(id: string): Promise<AgentInsight | null>;
   findByUserId(
     userId: string,

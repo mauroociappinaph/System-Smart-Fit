@@ -82,7 +82,7 @@ describe('AuthController', () => {
       const currentUser = { sub: 'user-1', email: 'test@example.com', role: 'USER' };
       const expected = {
         id: 'user-1',
-        email: '',
+        email: 'test@example.com',
         role: 'USER' as const,
         name: 'Test User',
         weightKg: 75,
@@ -95,7 +95,7 @@ describe('AuthController', () => {
 
       const result = await controller.me(currentUser);
 
-      expect(mockService.me).toHaveBeenCalledWith('user-1');
+      expect(mockService.me).toHaveBeenCalledWith('user-1', 'test@example.com');
       expect(result).toEqual(expected);
     });
   });

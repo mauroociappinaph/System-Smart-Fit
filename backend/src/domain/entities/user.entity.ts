@@ -9,7 +9,6 @@ export enum UserGoal {
 
 export enum UserRole {
   USER = 'USER',
-  ADMIN = 'ADMIN',
 }
 
 export class User {
@@ -32,6 +31,32 @@ export class User {
   public get goal(): UserGoal { return this._goal; }
   public get role(): UserRole { return this._role; }
   public get registeredAt(): number { return this._registeredAt; }
+
+  /**
+   * Reconstitute a User from persisted data (bypasses factory logic).
+   * Intended for repository adapters only — no domain events are emitted.
+   */
+  public static reconstitute(options: {
+    id: string;
+    name: string;
+    weightKg: number;
+    heightCm: number;
+    birthDate: number;
+    goal: UserGoal;
+    role: UserRole;
+    registeredAt: number;
+  }): User {
+    return new User(
+      options.id,
+      options.name,
+      options.weightKg,
+      options.heightCm,
+      options.birthDate,
+      options.goal,
+      options.role,
+      options.registeredAt,
+    );
+  }
 
   /**
    * Factory method — creates a new User profile and its corresponding domain event.
@@ -59,6 +84,17 @@ export class User {
     }
     if (birthDate >= registeredAt) {
       throw new Error('User: birthDate must be before registration date');
+    }
+    if (birthDate <= 0) {
+      throw new Error('User: birthDate must be a positive timestamp');
+    }
+    const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
+    if (registeredAt - birthDate < ONE_YEAR_MS) {
+      throw new Error('User: user must be at least 1 year old');
+    }
+    const ONE_HUNDRED_TWENTY_YEARS_MS = 120 * 365 * 24 * 60 * 60 * 1000;
+    if (registeredAt - birthDate > ONE_HUNDRED_TWENTY_YEARS_MS) {
+      throw new Error('User: birthDate cannot be more than 120 years ago');
     }
     if (!Object.values(UserGoal).includes(goal)) {
       throw new Error(`User: invalid goal "${goal}"`);

@@ -1,17 +1,20 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { UserStateRepository } from '../../../application/ports/out/user-state.repository';
+import { UserStateRepository } from '../../application/ports/out/user-state.repository';
 import {
   UserState,
   UserStateEnum,
-} from '../../../domain/entities/user-state.entity';
+} from '../../domain/entities/user-state.entity';
 
 @Injectable()
 export class UserStatePrismaRepository implements UserStateRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async save(state: UserState): Promise<void> {
-    await this.prisma.userState.create({
+  async save(state: UserState, tx?: Prisma.TransactionClient): Promise<void> {
+    const client = tx ?? this.prisma;
+
+    await client.userState.create({
       data: {
         id: state.id,
         userId: state.userId,

@@ -64,6 +64,7 @@ describe('PrismaOutboxRepository', () => {
           eventName: 'user.registered',
           payload: JSON.stringify({ value: 'data' }),
           status: 'PENDING',
+          correlationId: 'corr-1',
           createdAt: expect.any(Number),
         },
       });

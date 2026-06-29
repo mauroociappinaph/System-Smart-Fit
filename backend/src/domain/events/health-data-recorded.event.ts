@@ -2,9 +2,9 @@ import { DomainEvent } from '../../shared/domain/domain-event.interface';
 
 export interface HealthDataRecordedPayload {
   readonly userId: string;
-  readonly metricType: string;
+  readonly metricType: import('../../domain/entities/health-telemetry.entity').MetricType;
   readonly value: number;
-  readonly unit: string;
+  readonly unit: import('../../domain/entities/health-telemetry.entity').MetricUnit;
   readonly deviceTimestamp: number;
 }
 

@@ -45,6 +45,7 @@ describe('EventBusPort Contract', () => {
   });
 
   afterEach(async () => {
+    jest.restoreAllMocks();
     await module.close();
   });
 
@@ -97,21 +98,28 @@ describe('EventBusPort Contract', () => {
         new TestEvent('evt-1', 'corr-1', Date.now(), { test: '1' }),
         new TestEvent('evt-2', 'corr-2', Date.now(), { test: '2' }),
       ];
-      eventEmitter.emitAsync.mockResolvedValue(undefined);
+      eventEmitter.emitAsync.mockResolvedValue([]);
 
       await expect(adapter.publishAll(events)).resolves.toBeUndefined();
     });
 
-    it('should reject if any emission fails', async () => {
+    it('should reject with AggregateError if any emission fails', async () => {
       const events = [
         new TestEvent('evt-1', 'corr-1', Date.now(), { test: '1' }),
         new TestEvent('evt-2', 'corr-2', Date.now(), { test: '2' }),
       ];
       eventEmitter.emitAsync
-        .mockResolvedValueOnce(undefined)
+        .mockResolvedValueOnce([])
         .mockRejectedValueOnce(new Error('Partial failure'));
 
-      await expect(adapter.publishAll(events)).rejects.toThrow('Partial failure');
+      let err: AggregateError | undefined;
+      try {
+        await adapter.publishAll(events);
+      } catch (e) {
+        err = e as AggregateError;
+      }
+      expect(err).toBeInstanceOf(AggregateError);
+      expect(err!.message).toBe('EventBus: 1/2 events failed to publish');
     });
   });
 });

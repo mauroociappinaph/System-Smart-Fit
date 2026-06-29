@@ -1,15 +1,21 @@
 import { randomUUID } from 'crypto';
 import { RecordHealthTelemetryUseCase } from '../ports/in/record-health-telemetry.use-case';
 import { RecordHealthTelemetryCommand } from '../ports/in/record-health-telemetry.command';
-import { HealthTelemetryRepository } from '../ports/out/health-telemetry.repository';
+import type { HealthTelemetryRepository } from '../ports/out/health-telemetry.repository';
 import { HealthTelemetry } from '../../domain/entities/health-telemetry.entity';
 import { Injectable, Inject } from '@nestjs/common';
+import { PrismaService } from '../../infrastructure/prisma/prisma.service';
+import type { OutboxRepositoryPort } from '../ports/out/event-outbox.repository';
+import { OUTBOX_REPOSITORY_PORT } from '../ports/out/event-outbox.repository';
 
 @Injectable()
 export class RecordHealthTelemetryService implements RecordHealthTelemetryUseCase {
   constructor(
     @Inject('HealthTelemetryRepository')
     private readonly telemetryRepository: HealthTelemetryRepository,
+    @Inject(OUTBOX_REPOSITORY_PORT)
+    private readonly outboxRepository: OutboxRepositoryPort,
+    private readonly prisma: PrismaService,
   ) {}
 
   async execute(command: RecordHealthTelemetryCommand): Promise<void> {
@@ -31,11 +37,10 @@ export class RecordHealthTelemetryService implements RecordHealthTelemetryUseCas
       correlationId,
     );
 
-    // 2. Persistence: Save Entity via Output Port
-    await this.telemetryRepository.save(entity);
-
-    // 3. (Pending) Publish Domain Event via EventBus Port
-    void event; // Will be published via EventBus in Phase 4
-    // await this.eventBus.publish(event);
+    // 2. Persistence: Save Entity + Outbox Event in Transaction
+    await this.prisma.$transaction(async (tx) => {
+      await this.telemetryRepository.save(entity, tx);
+      await this.outboxRepository.save(event, tx);
+    });
   }
 }

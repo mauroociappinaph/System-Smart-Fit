@@ -18,10 +18,11 @@ describe('GetCurrentStateService', () => {
   });
 
   it('should return current state when user has one', async () => {
+    const transitionedAt = Date.now();
     const { entity } = UserState.transition(
       'id-1', 'evt-1', 'user-1',
-      UserStateEnum.ACTIVE_TRACKING, UserStateEnum.IDLE,
-      Date.now(), 'corr-1',
+      UserStateEnum.ACTIVE_TRACKING, UserStateEnum.IDLE, UserStateEnum.IDLE,
+      transitionedAt, 'corr-1',
     );
 
     mockRepo.findCurrentByUserId.mockResolvedValue(entity);

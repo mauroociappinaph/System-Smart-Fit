@@ -37,3 +37,6 @@ backend/prisma/*.db-journal
 
 # Local Pi runtime state
 .atl/
+
+# Project graph cache
+.project-graph-cache.json
