@@ -64,7 +64,9 @@ export class NIMAdapter implements GenerateInsightsPort {
         this.logger.error(
           `NIM attempt ${attempt}/${this.maxRetries} failed: ${error instanceof Error ? error.message : String(error)}`,
         );
-        // On final attempt, let loop fall through to return []
+        if (attempt === this.maxRetries) {
+          throw error;
+        }
       }
     }
 

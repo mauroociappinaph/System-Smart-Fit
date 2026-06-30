@@ -10,6 +10,7 @@ export class MistralAdapter implements GenerateInsightsPort {
   private readonly logger = new Logger(MistralAdapter.name);
   private readonly client: OpenAI;
   private readonly model: string;
+  private readonly maxRetries = 2;
 
   constructor(private readonly configService: ConfigService) {
     this.client = new OpenAI({
@@ -32,37 +33,43 @@ export class MistralAdapter implements GenerateInsightsPort {
 
     const prompt = this.buildPrompt(context);
 
-    try {
-      const response = await this.client.chat.completions.create({
-        model: this.model,
-        messages: [
-          {
-            role: 'system',
-            content:
-              'Eres un entrenador personal de fitness y salud. Generas insights personalizados basados en datos biométricos del usuario. ' +
-              'Responde SIEMPRE con un JSON array válido. Cada insight tiene: category (enum: "nutrition"|"exercise"|"sleep"|"recovery"|"general"), ' +
-              'content (string con el insight en español rioplatense, cálido y motivacional), score (number 0-100, confianza del modelo). ' +
-              'Máximo 3 insights por respuesta.',
-          },
-          { role: 'user', content: prompt },
-        ],
-        max_tokens: 500,
-        temperature: 0.7,
-      });
+    for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
+      try {
+        const response = await this.client.chat.completions.create({
+          model: this.model,
+          messages: [
+            {
+              role: 'system',
+              content:
+                'Eres un entrenador personal de fitness y salud. Generas insights personalizados basados en datos biométricos del usuario. ' +
+                'Responde SIEMPRE con un JSON array válido. Cada insight tiene: category (enum: "nutrition"|"exercise"|"sleep"|"recovery"|"general"), ' +
+                'content (string con el insight en español rioplatense, cálido y motivacional), score (number 0-100, confianza del modelo). ' +
+                'Máximo 3 insights por respuesta.',
+            },
+            { role: 'user', content: prompt },
+          ],
+          max_tokens: 500,
+          temperature: 0.7,
+        });
 
-      const raw = response.choices[0]?.message?.content;
-      if (!raw) {
-        this.logger.warn('Empty response from Mistral');
-        return [];
+        const raw = response.choices[0]?.message?.content;
+        if (!raw) {
+          this.logger.warn('Empty response from Mistral');
+          return [];
+        }
+
+        return this.parseInsights(raw, userId, correlationId);
+      } catch (error) {
+        this.logger.error(
+          `Mistral attempt ${attempt}/${this.maxRetries} failed: ${error instanceof Error ? error.message : String(error)}`,
+        );
+        if (attempt === this.maxRetries) {
+          throw error;
+        }
       }
-
-      return this.parseInsights(raw, userId, correlationId);
-    } catch (error) {
-      this.logger.error(
-        `Mistral inference failed: ${error instanceof Error ? error.message : String(error)}`,
-      );
-      throw error;
     }
+
+    return [];
   }
 
   async validateInsight(_insightId: string, _action: string): Promise<void> {
@@ -76,7 +83,11 @@ export class MistralAdapter implements GenerateInsightsPort {
       return 'El usuario no tiene datos biométricos recientes. Generá un insight motivacional general para empezar su viaje fitness.';
     }
 
-    const sanitize = (s: string) => s.replace(/[\n\r]/g, ' ').trim();
+    const sanitize = (s: string) =>
+      String(s)
+        .replace(/[\n\r]/g, ' ')
+        .replace(/[<>]/g, '')
+        .slice(0, 80);
 
     const metrics = context.recentTelemetry
       .map(

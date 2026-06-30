@@ -3,6 +3,8 @@ import { AgentInsightController } from '../../presentation/controllers/agent-ins
 import { CreateInsightService } from '../../application/use-cases/create-insight.service';
 import { ValidateInsightService } from '../../application/use-cases/validate-insight.service';
 import { GetUserInsightsService } from '../../application/use-cases/get-user-insights.service';
+import { GenerateAndPersistInsightsUseCase } from '../../application/use-cases/generate-and-persist-insights.use-case';
+import { HealthDataNormalizer } from '../../application/services/health-data-normalizer';
 import { AgentInsightPrismaRepository } from '../../infrastructure/persistence/agent-insight-prisma.repository';
 import { InferenceModule } from '../../infrastructure/inference/inference.module';
 
@@ -13,6 +15,8 @@ import { InferenceModule } from '../../infrastructure/inference/inference.module
     CreateInsightService,
     ValidateInsightService,
     GetUserInsightsService,
+    GenerateAndPersistInsightsUseCase,
+    HealthDataNormalizer,
     {
       provide: 'AgentInsightRepository',
       useClass: AgentInsightPrismaRepository,
@@ -22,6 +26,8 @@ import { InferenceModule } from '../../infrastructure/inference/inference.module
     CreateInsightService,
     ValidateInsightService,
     GetUserInsightsService,
+    GenerateAndPersistInsightsUseCase,
+    HealthDataNormalizer,
   ],
 })
 export class AgentInsightModule {}

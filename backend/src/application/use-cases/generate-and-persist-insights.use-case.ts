@@ -8,6 +8,7 @@ import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import type { OutboxRepositoryPort } from '../ports/out/event-outbox.repository';
 import { OUTBOX_REPOSITORY_PORT } from '../ports/out/event-outbox.repository';
 import { HealthDataContext } from '../dto/health-data-context.dto';
+import { HealthDataNormalizer } from '../services/health-data-normalizer';
 import { InsightGenerated } from '../../domain/events/insight-generated.event';
 
 export interface GenerateAndPersistInsightsCommand {
@@ -27,6 +28,7 @@ export class GenerateAndPersistInsightsUseCase {
     @Inject(OUTBOX_REPOSITORY_PORT)
     private readonly outboxRepository: OutboxRepositoryPort,
     private readonly prisma: PrismaService,
+    private readonly healthDataNormalizer: HealthDataNormalizer,
   ) {}
 
   async execute(command: GenerateAndPersistInsightsCommand): Promise<{
@@ -35,12 +37,11 @@ export class GenerateAndPersistInsightsUseCase {
   }> {
     const correlationId = command.correlationId || randomUUID();
 
-    // 1. Build health data context
-    const context: HealthDataContext = {
-      userId: command.userId,
-      recentTelemetry: [], // Will be populated by the adapter if needed
-      userState: command.userState,
-    };
+    // 1. Build health data context using HealthDataNormalizer
+    const context = await this.healthDataNormalizer.buildContext(
+      command.userId,
+      command.userState,
+    );
 
     // 2. Generate insights via LLM adapter
     const generatedInsights = await this.generateInsightsPort.generateInsights(
