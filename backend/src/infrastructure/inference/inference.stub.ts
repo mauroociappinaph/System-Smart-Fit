@@ -1,20 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AgentInsight } from '../../domain/entities/agent-insight.entity';
-
-/**
- * Port interface for AI inference generation.
- * TODO: extract to a proper port file under application/ports/out/
- */
-export const GENERATE_INSIGHTS_PORT = 'GenerateInsightsPort';
-
-export interface GenerateInsightsPort {
-  generateInsights(
-    userId: string,
-    correlationId: string,
-    telemetryId?: string,
-  ): Promise<AgentInsight[]>;
-  validateInsight(insightId: string, action: string): Promise<void>;
-}
+import { GenerateInsightsPort } from '../../application/ports/out/generate-insights.port';
 
 @Injectable()
 export class InferenceStubAdapter implements GenerateInsightsPort {
