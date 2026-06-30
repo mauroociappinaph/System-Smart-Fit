@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 import { GenerateInsightsPort } from '../../application/ports/out/generate-insights.port';
 import { AgentInsight } from '../../domain/entities/agent-insight.entity';
-import { HealthDataContext } from './health-data-context.type';
+import type { HealthDataContext } from '../../application/dto/health-data-context.dto';
 
 @Injectable()
 export class MistralAdapter implements GenerateInsightsPort {
@@ -48,7 +48,6 @@ export class MistralAdapter implements GenerateInsightsPort {
         ],
         max_tokens: 500,
         temperature: 0.7,
-        response_format: { type: 'json_object' },
       });
 
       const raw = response.choices[0]?.message?.content;
@@ -77,18 +76,24 @@ export class MistralAdapter implements GenerateInsightsPort {
       return 'El usuario no tiene datos biométricos recientes. Generá un insight motivacional general para empezar su viaje fitness.';
     }
 
+    const sanitize = (s: string) => s.replace(/[\n\r]/g, ' ').trim();
+
     const metrics = context.recentTelemetry
       .map(
         (t) =>
-          `- ${t.metricType}: ${t.value} ${t.unit} (${new Date(t.recordedAt).toLocaleDateString()})`,
+          `- ${sanitize(t.metricType)}: ${sanitize(String(t.value))} ${sanitize(t.unit)} (${new Date(t.recordedAt).toLocaleDateString()})`,
       )
       .join('\n');
+
+    const userState = context.userState
+      ? `Estado actual: ${sanitize(context.userState)}`
+      : '';
 
     return `Datos biométricos recientes del usuario:
 
 ${metrics}
 
-${context.userState ? `Estado actual: ${context.userState}` : ''}
+${userState}
 
 Generá insights personalizados de fitness y salud basados en estos datos.`;
   }
@@ -103,12 +108,14 @@ Generá insights personalizados de fitness y salud basados en estos datos.`;
       const items = Array.isArray(parsed) ? parsed : (parsed.insights ?? []);
 
       return items.map((item: Record<string, unknown>) => {
+        const rawScore = Number(item.score ?? 50);
+        const clampedScore = Math.min(100, Math.max(0, rawScore));
         const { entity } = AgentInsight.create(
           userId,
           correlationId,
           String(item.category ?? 'general'),
           String(item.content ?? ''),
-          Number(item.score ?? 50),
+          clampedScore,
         );
         return entity;
       });

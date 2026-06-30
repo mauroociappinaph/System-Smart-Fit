@@ -4,31 +4,50 @@ import { GENERATE_INSIGHTS_PORT } from '../../application/ports/out/generate-ins
 import { InferenceStubAdapter } from './inference.stub';
 import { NIMAdapter } from './nim.adapter';
 import { MistralAdapter } from './mistral.adapter';
+import { FallbackAdapter } from './fallback.adapter';
+
+const nimProvider = {
+  provide: 'NimAdapter',
+  useFactory: (configService: ConfigService) => new NIMAdapter(configService),
+  inject: [ConfigService],
+};
+
+const mistralProvider = {
+  provide: 'MistralAdapter',
+  useFactory: (configService: ConfigService) =>
+    new MistralAdapter(configService),
+  inject: [ConfigService],
+};
 
 const adapterProvider = {
   provide: GENERATE_INSIGHTS_PORT,
-  useFactory: (configService: ConfigService) => {
-    const adapter = configService.get<string>('AI_ADAPTER') ?? 'stub';
+  useFactory: (
+    configService: ConfigService,
+    nimAdapter: NIMAdapter,
+    mistralAdapter: MistralAdapter,
+  ) => {
+    const adapter = configService.get<string>('AI_ADAPTER') ?? 'fallback';
 
     switch (adapter) {
       case 'nim':
-        return new NIMAdapter(configService);
+        return nimAdapter;
       case 'mistral':
-        return new MistralAdapter(configService);
-      case 'stub':
+        return mistralAdapter;
+      case 'fallback':
       default:
-        return new InferenceStubAdapter();
+        // Primary: NIM, Fallback: Mistral
+        return new FallbackAdapter(nimAdapter, mistralAdapter);
     }
   },
-  inject: [ConfigService],
+  inject: [ConfigService, 'NimAdapter', 'MistralAdapter'],
 };
 
 @Module({
   providers: [
     adapterProvider,
+    nimProvider,
+    mistralProvider,
     InferenceStubAdapter,
-    NIMAdapter,
-    MistralAdapter,
   ],
   exports: [GENERATE_INSIGHTS_PORT],
 })
@@ -38,7 +57,7 @@ export class InferenceModule implements OnModuleInit {
   constructor(private readonly configService: ConfigService) {}
 
   onModuleInit() {
-    const adapter = this.configService.get<string>('AI_ADAPTER') ?? 'stub';
+    const adapter = this.configService.get<string>('AI_ADAPTER') ?? 'fallback';
     this.logger.log(`AI Inference adapter selected: ${adapter}`);
   }
 }
