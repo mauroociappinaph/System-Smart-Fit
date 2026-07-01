@@ -27,4 +27,29 @@ export class HealthTelemetryPrismaRepository implements HealthTelemetryRepositor
       },
     });
   }
+
+  async findByUserId(
+    userId: string,
+    options?: { limit?: number },
+  ): Promise<HealthTelemetry[]> {
+    const records = await this.prisma.healthTelemetry.findMany({
+      where: { userId },
+      orderBy: { serverReceivedAt: 'desc' },
+      take: options?.limit ?? 10,
+    });
+
+    return records.map((r) =>
+      HealthTelemetry.reconstitute({
+        id: r.id,
+        userId: r.userId,
+        metricType:
+          r.metricType as import('../../domain/entities/health-telemetry.entity').MetricType,
+        value: Number(r.value),
+        unit: r.unit as import('../../domain/entities/health-telemetry.entity').MetricUnit,
+        deviceTimestamp: Number(r.deviceTimestamp),
+        serverReceivedAt: Number(r.serverReceivedAt),
+        correlationId: r.correlationId,
+      }),
+    );
+  }
 }

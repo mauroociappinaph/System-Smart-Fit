@@ -69,6 +69,32 @@ export class HealthTelemetry {
    * Factory method to create a new HealthTelemetry instance and its corresponding domain event.
    * IDs and timestamps must be injected to preserve purity (Hexagonal Architecture).
    */
+  /**
+   * Reconstitute a HealthTelemetry from persisted data (bypasses factory logic).
+   * Intended for repository adapters only.
+   */
+  public static reconstitute(options: {
+    id: string;
+    userId: string;
+    metricType: MetricType;
+    value: number;
+    unit: MetricUnit;
+    deviceTimestamp: number;
+    serverReceivedAt: number;
+    correlationId: string;
+  }): HealthTelemetry {
+    return new HealthTelemetry(
+      options.id,
+      options.userId,
+      options.metricType,
+      options.value,
+      options.unit,
+      options.deviceTimestamp,
+      options.serverReceivedAt,
+      options.correlationId,
+    );
+  }
+
   public static record(
     id: string,
     eventId: string,

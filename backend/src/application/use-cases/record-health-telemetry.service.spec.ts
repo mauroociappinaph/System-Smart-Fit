@@ -11,6 +11,7 @@ describe('RecordHealthTelemetryService', () => {
   beforeEach(() => {
     mockRepository = {
       save: jest.fn().mockResolvedValue(undefined),
+      findByUserId: jest.fn().mockResolvedValue([]),
     };
     mockOutbox = {
       save: jest.fn().mockResolvedValue(undefined),

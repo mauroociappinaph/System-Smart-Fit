@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -10,15 +11,18 @@ import { AgentInsightModule } from './modules/agent-insight/agent-insight.module
 import { AuthModule } from './modules/auth/auth.module';
 import { DomainExceptionFilter } from './presentation/filters/domain-exception.filter';
 import { RolesGuard } from './modules/auth/guards/roles.guard';
+import { EventListenersModule } from './infrastructure/event-listeners/event-listeners.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
     HealthTelemetryModule,
     UserModule,
     UserStateModule,
     AgentInsightModule,
     AuthModule,
+    EventListenersModule,
   ],
   controllers: [AppController],
   providers: [

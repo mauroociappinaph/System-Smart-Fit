@@ -29,7 +29,7 @@ export class CreateInsightRequestDto {
   @Type(() => Number)
   @IsNumber()
   @Min(0)
-  @Max(1)
+  @Max(100)
   score: number;
 
   @IsUUID('4')

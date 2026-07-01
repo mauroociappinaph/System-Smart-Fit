@@ -65,6 +65,7 @@ export class AgentInsight {
       eventId?: string;
     },
   ): { entity: AgentInsight; event: InsightGenerated } {
+    const clampedScore = Math.min(100, Math.max(0, Number(score) || 0));
     const insightId = overrides?.insightId ?? randomUUID();
     const eventId = overrides?.eventId ?? randomUUID();
     const now = Date.now();
@@ -75,7 +76,7 @@ export class AgentInsight {
       correlationId,
       category,
       content,
-      score,
+      clampedScore,
       ValidationStatus.PENDING,
       now,
       now,
@@ -86,7 +87,7 @@ export class AgentInsight {
       insightId,
       category,
       content,
-      score,
+      score: clampedScore,
       correlationId,
     });
 

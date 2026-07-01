@@ -3,31 +3,31 @@ import { AgentInsightController } from '../../presentation/controllers/agent-ins
 import { CreateInsightService } from '../../application/use-cases/create-insight.service';
 import { ValidateInsightService } from '../../application/use-cases/validate-insight.service';
 import { GetUserInsightsService } from '../../application/use-cases/get-user-insights.service';
+import { GenerateAndPersistInsightsUseCase } from '../../application/use-cases/generate-and-persist-insights.use-case';
+import { HealthDataNormalizer } from '../../application/services/health-data-normalizer';
 import { AgentInsightPrismaRepository } from '../../infrastructure/persistence/agent-insight-prisma.repository';
-import {
-  InferenceStubAdapter,
-  GENERATE_INSIGHTS_PORT,
-} from '../../infrastructure/inference/inference.stub';
+import { InferenceModule } from '../../infrastructure/inference/inference.module';
 
 @Module({
+  imports: [InferenceModule],
   controllers: [AgentInsightController],
   providers: [
     CreateInsightService,
     ValidateInsightService,
     GetUserInsightsService,
+    GenerateAndPersistInsightsUseCase,
+    HealthDataNormalizer,
     {
       provide: 'AgentInsightRepository',
       useClass: AgentInsightPrismaRepository,
-    },
-    {
-      provide: GENERATE_INSIGHTS_PORT,
-      useClass: InferenceStubAdapter,
     },
   ],
   exports: [
     CreateInsightService,
     ValidateInsightService,
     GetUserInsightsService,
+    GenerateAndPersistInsightsUseCase,
+    HealthDataNormalizer,
   ],
 })
 export class AgentInsightModule {}

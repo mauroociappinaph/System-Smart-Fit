@@ -6,4 +6,8 @@ export interface HealthTelemetryRepository {
     telemetry: HealthTelemetry,
     tx?: Prisma.TransactionClient,
   ): Promise<void>;
+  findByUserId(
+    userId: string,
+    options?: { limit?: number },
+  ): Promise<HealthTelemetry[]>;
 }
