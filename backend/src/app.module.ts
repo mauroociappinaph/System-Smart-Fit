@@ -11,6 +11,7 @@ import { AgentInsightModule } from './modules/agent-insight/agent-insight.module
 import { AuthModule } from './modules/auth/auth.module';
 import { DomainExceptionFilter } from './presentation/filters/domain-exception.filter';
 import { RolesGuard } from './modules/auth/guards/roles.guard';
+import { EventListenersModule } from './infrastructure/event-listeners/event-listeners.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { RolesGuard } from './modules/auth/guards/roles.guard';
     UserStateModule,
     AgentInsightModule,
     AuthModule,
+    EventListenersModule,
   ],
   controllers: [AppController],
   providers: [

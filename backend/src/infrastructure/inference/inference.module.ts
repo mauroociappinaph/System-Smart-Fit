@@ -5,6 +5,7 @@ import { InferenceStubAdapter } from './inference.stub';
 import { NIMAdapter } from './nim.adapter';
 import { MistralAdapter } from './mistral.adapter';
 import { FallbackAdapter } from './fallback.adapter';
+import { validateAiConfig } from '../../config';
 
 const nimProvider = {
   provide: 'NimAdapter',
@@ -25,21 +26,23 @@ const adapterProvider = {
     configService: ConfigService,
     nimAdapter: NIMAdapter,
     mistralAdapter: MistralAdapter,
+    stubAdapter: InferenceStubAdapter,
   ) => {
-    const adapter = configService.get<string>('AI_ADAPTER') ?? 'fallback';
+    const aiConfig = validateAiConfig(configService);
 
-    switch (adapter) {
+    switch (aiConfig.adapter) {
       case 'nim':
         return nimAdapter;
       case 'mistral':
         return mistralAdapter;
-      case 'fallback':
+      case 'stub':
+        return stubAdapter;
       default:
         // Primary: NIM, Fallback: Mistral
         return new FallbackAdapter(nimAdapter, mistralAdapter);
     }
   },
-  inject: [ConfigService, 'NimAdapter', 'MistralAdapter'],
+  inject: [ConfigService, 'NimAdapter', 'MistralAdapter', InferenceStubAdapter],
 };
 
 @Module({
@@ -57,7 +60,7 @@ export class InferenceModule implements OnModuleInit {
   constructor(private readonly configService: ConfigService) {}
 
   onModuleInit() {
-    const adapter = this.configService.get<string>('AI_ADAPTER') ?? 'fallback';
-    this.logger.log(`AI Inference adapter selected: ${adapter}`);
+    const aiConfig = validateAiConfig(this.configService);
+    this.logger.log(`AI Inference adapter selected: ${aiConfig.adapter}`);
   }
 }

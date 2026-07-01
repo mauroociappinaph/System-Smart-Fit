@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import type { HealthTelemetryRepository } from '../ports/out/health-telemetry.repository';
 import type { HealthDataContext } from '../dto/health-data-context.dto';
 
 @Injectable()
 export class HealthDataNormalizer {
   constructor(
+    @Inject('HealthTelemetryRepository')
     private readonly telemetryRepository: HealthTelemetryRepository,
   ) {}
 

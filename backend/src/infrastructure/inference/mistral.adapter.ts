@@ -4,21 +4,21 @@ import OpenAI from 'openai';
 import { GenerateInsightsPort } from '../../application/ports/out/generate-insights.port';
 import { AgentInsight } from '../../domain/entities/agent-insight.entity';
 import type { HealthDataContext } from '../../application/dto/health-data-context.dto';
+import { BaseInferenceAdapter } from './base-inference.adapter';
 
 @Injectable()
-export class MistralAdapter implements GenerateInsightsPort {
-  private readonly logger = new Logger(MistralAdapter.name);
+export class MistralAdapter extends BaseInferenceAdapter {
   private readonly client: OpenAI;
   private readonly model: string;
   private readonly maxRetries = 2;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(configService: ConfigService) {
+    super();
     this.client = new OpenAI({
       baseURL: 'https://api.mistral.ai/v1',
-      apiKey: this.configService.getOrThrow<string>('MISTRAL_API_KEY'),
+      apiKey: configService.getOrThrow<string>('MISTRAL_API_KEY'),
     });
-    this.model =
-      this.configService.get<string>('MISTRAL_MODEL') ?? 'mistral-tiny';
+    this.model = configService.get<string>('MISTRAL_MODEL') ?? 'mistral-tiny';
   }
 
   async generateInsights(
@@ -70,71 +70,5 @@ export class MistralAdapter implements GenerateInsightsPort {
     }
 
     return [];
-  }
-
-  async validateInsight(_insightId: string, _action: string): Promise<void> {
-    this.logger.warn(
-      'MistralAdapter.validateInsight is not implemented (stub)',
-    );
-  }
-
-  private buildPrompt(context?: HealthDataContext): string {
-    if (!context || context.recentTelemetry.length === 0) {
-      return 'El usuario no tiene datos biométricos recientes. Generá un insight motivacional general para empezar su viaje fitness.';
-    }
-
-    const sanitize = (s: string) =>
-      String(s)
-        .replace(/[\n\r]/g, ' ')
-        .replace(/[<>]/g, '')
-        .slice(0, 80);
-
-    const metrics = context.recentTelemetry
-      .map(
-        (t) =>
-          `- ${sanitize(t.metricType)}: ${sanitize(String(t.value))} ${sanitize(t.unit)} (${new Date(t.recordedAt).toLocaleDateString()})`,
-      )
-      .join('\n');
-
-    const userState = context.userState
-      ? `Estado actual: ${sanitize(context.userState)}`
-      : '';
-
-    return `Datos biométricos recientes del usuario:
-
-${metrics}
-
-${userState}
-
-Generá insights personalizados de fitness y salud basados en estos datos.`;
-  }
-
-  private parseInsights(
-    raw: string,
-    userId: string,
-    correlationId: string,
-  ): AgentInsight[] {
-    try {
-      const parsed = JSON.parse(raw);
-      const items = Array.isArray(parsed) ? parsed : (parsed.insights ?? []);
-
-      return items.map((item: Record<string, unknown>) => {
-        const rawScore = Number(item.score ?? 50);
-        const clampedScore = Math.min(100, Math.max(0, rawScore));
-        const { entity } = AgentInsight.create(
-          userId,
-          correlationId,
-          String(item.category ?? 'general'),
-          String(item.content ?? ''),
-          clampedScore,
-        );
-        return entity;
-      });
-    } catch {
-      this.logger.warn(
-        'Failed to parse Mistral response as JSON, returning empty',
-      );
-      return [];
-    }
   }
 }
